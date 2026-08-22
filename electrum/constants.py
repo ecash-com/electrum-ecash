@@ -29,6 +29,7 @@ import json
 from typing import Sequence, Tuple, Mapping, Type, List, Optional
 
 from .lntransport import LNPeerAddr
+from . import ecx  # ECX: chain parameters
 from .util import inv_dict, all_subclasses, classproperty
 from . import bitcoin
 
@@ -56,8 +57,10 @@ def create_fallback_node_list(fallback_nodes_dict: dict[str, dict]) -> List[LNPe
     return fallback_nodes
 
 
-GIT_REPO_URL = "https://github.com/spesmilo/electrum"
-GIT_REPO_ISSUES_URL = "https://github.com/spesmilo/electrum/issues"
+# ECX: base_crash_reporter.py keys is_forked_codebase off this and then refuses
+# to send reports to upstream's crashhub. Upstream provides the hook for forks.
+GIT_REPO_URL = ecx.GIT_REPO_URL
+GIT_REPO_ISSUES_URL = ecx.GIT_REPO_ISSUES_URL
 RELEASE_NOTES_URL = "https://raw.githubusercontent.com/spesmilo/electrum/refs/heads/master/RELEASE-NOTES"
 BIP39_WALLET_FORMATS = read_json('bip39_wallet_formats.json')
 
