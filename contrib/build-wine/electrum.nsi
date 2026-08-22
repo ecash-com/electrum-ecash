@@ -189,11 +189,11 @@ Section
   CreateShortCut "$SMPROGRAMS\${PRODUCT_NAME}\${PRODUCT_NAME} Testnet.lnk" "$INSTDIR\electrum-${PRODUCT_VERSION}.exe" "--testnet" "$INSTDIR\electrum-${PRODUCT_VERSION}.exe" 0
 
 
-  ;Links bitcoin:, lightning: and lnurl LUD-17 URIs to Electrum
-  WriteRegStr HKCU "Software\Classes\bitcoin" "" "URL:bitcoin Protocol"
-  WriteRegStr HKCU "Software\Classes\bitcoin" "URL Protocol" ""
-  WriteRegStr HKCU "Software\Classes\bitcoin" "DefaultIcon" "$\"$INSTDIR\electrum.ico, 0$\""
-  WriteRegStr HKCU "Software\Classes\bitcoin\shell\open\command" "" "$\"$INSTDIR\electrum-${PRODUCT_VERSION}.exe$\" $\"%1$\""
+  ;Links ecx: URIs to the wallet
+  WriteRegStr HKCU "Software\Classes\ecx" "" "URL:ecx Protocol"
+  WriteRegStr HKCU "Software\Classes\ecx" "URL Protocol" ""
+  WriteRegStr HKCU "Software\Classes\ecx" "DefaultIcon" "$\"$INSTDIR\electrum.ico, 0$\""
+  WriteRegStr HKCU "Software\Classes\ecx\shell\open\command" "" "$\"$INSTDIR\electrum-${PRODUCT_VERSION}.exe$\" $\"%1$\""
   WriteRegStr HKCU "Software\Classes\lightning" "" "URL:lightning Protocol"
   WriteRegStr HKCU "Software\Classes\lightning" "URL Protocol" ""
   WriteRegStr HKCU "Software\Classes\lightning" "DefaultIcon" "$\"$INSTDIR\electrum.ico, 0$\""
@@ -236,7 +236,7 @@ Section "Uninstall"
   Delete "$SMPROGRAMS\${PRODUCT_NAME}\*.*"
   RMDir  "$SMPROGRAMS\${PRODUCT_NAME}"
 
-  DeleteRegKey HKCU "Software\Classes\bitcoin"
+  DeleteRegKey HKCU "Software\Classes\ecx"
   DeleteRegKey HKCU "Software\Classes\lightning"
   DeleteRegKey HKCU "Software\Classes\lnurlp"
   DeleteRegKey HKCU "Software\Classes\lnurlw"
