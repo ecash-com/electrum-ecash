@@ -48,6 +48,7 @@ from aiorpcx import ignore_after, run_in_thread
 
 from . import util, keystore, transaction, bitcoin, coinchooser, bip32, descriptor
 from . import constants
+from . import ecx  # ECX: chain parameters
 from . import crypto
 from .i18n import _
 from .bip32 import BIP32Node, convert_bip32_intpath_to_strpath, convert_bip32_strpath_to_intpath
@@ -207,6 +208,12 @@ def get_locktime_for_new_transaction(
     *,
     include_random_component: bool = True,
 ) -> int:
+    # ECX: every transaction carries the replay-protection marker.
+    # nLockTime == 499999999 is "final" to ECX nodes and permanently non-final
+    # to Bitcoin Core, so an ECX transaction can never be replayed onto BTC.
+    # This returns early: upstream's fee-sniping logic below is unreachable
+    # here, but is left untouched so upstream changes to it still merge cleanly.
+    return ecx.LOCKTIME
     # if no network or not up to date, just set locktime to zero
     if not network:
         return 0
