@@ -24,7 +24,14 @@ echo
 echo "== new files (no upstream conflict surface) =="
 git diff --diff-filter=A --name-only "$BASE"..HEAD | sed 's/^/  /'
 echo
-NEW=$(git diff --numstat "$BASE"..HEAD | awk '$3=="electrum/ecx.py"{print $1}')
-TOT=$(git diff --shortstat "$BASE"..HEAD | grep -oE '[0-9]+ insertion' | grep -oE '[0-9]+')
-echo "== ${TOT:-0} lines added, of which ${NEW:-0} are the self-contained electrum/ecx.py =="
-echo "   so ~$(( ${TOT:-0} - ${NEW:-0} )) lines actually touch upstream files."
+# Honest measure: lines touching files that already existed upstream. New files
+# have no conflict surface, so they are not part of the maintenance burden.
+git diff --diff-filter=A --name-only "$BASE"..HEAD > /tmp/.ecx_newfiles.$$
+git diff --numstat "$BASE"..HEAD | awk '
+  NR==FNR { isnew[$0]=1; next }
+  { total+=$1; if (isnew[$3]) newl+=$1; else { existing+=$1; existdel+=$2 } }
+  END {
+    printf "== %d lines added total; %d of them in new files ==\n", total, newl
+    printf "   %d added / %d removed actually touch pre-existing upstream files.\n", existing, existdel
+  }' /tmp/.ecx_newfiles.$$ -
+rm -f /tmp/.ecx_newfiles.$$
