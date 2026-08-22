@@ -8,9 +8,14 @@ from . import bitcoin
 from .util import format_satoshis_plain
 from .bitcoin import COIN, TOTAL_COIN_SUPPLY_LIMIT_IN_BTC
 from .bolt11 import decode_bolt11_invoice, BOLT11DecodeException
+from . import ecx  # ECX: chain parameters
 
 # note: when checking against these, use .lower() to support case-insensitivity
-BITCOIN_BIP21_URI_SCHEME = 'bitcoin'
+# ECX: must NOT be 'bitcoin'. ECX addresses are byte-identical to BTC addresses,
+# so claiming the bitcoin: handler would let this wallet answer a Bitcoin invoice
+# with an ECX payment: funds gone, payee sees nothing arrive. Name kept as-is to
+# stay a one-line diff; it is referenced from payment_identifier.py.
+BITCOIN_BIP21_URI_SCHEME = ecx.URI_SCHEME
 LIGHTNING_URI_SCHEME = 'lightning'
 
 # note: URI scheme handler registrations are duplicated all over the codebase:

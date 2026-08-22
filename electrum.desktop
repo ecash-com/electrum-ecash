@@ -15,7 +15,7 @@ StartupNotify=true
 StartupWMClass=electrum
 Terminal=false
 Type=Application
-MimeType=x-scheme-handler/bitcoin;x-scheme-handler/lightning;x-scheme-handler/lnurlp;x-scheme-handler/lnurlw;
+MimeType=x-scheme-handler/ecx;
 Actions=Testnet;
 Keywords=crypto;currency;BTC
 
