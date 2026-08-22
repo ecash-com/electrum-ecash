@@ -69,6 +69,7 @@ import certifi
 import dns.asyncresolver
 
 from .i18n import _
+from . import ecx  # ECX: chain parameters
 from .logging import get_logger, Logger
 
 if TYPE_CHECKING:
@@ -692,11 +693,11 @@ def user_dir():
     elif 'ANDROID_DATA' in os.environ:
         return android_data_dir()
     elif os.name == 'posix':
-        return os.path.join(os.environ["HOME"], ".electrum")
+        return os.path.join(os.environ["HOME"], ecx.DATADIR_POSIX)  # ECX: not ~/.electrum
     elif "APPDATA" in os.environ:
-        return os.path.join(os.environ["APPDATA"], "Electrum")
+        return os.path.join(os.environ["APPDATA"], ecx.DATADIR_WINDOWS)  # ECX
     elif "LOCALAPPDATA" in os.environ:
-        return os.path.join(os.environ["LOCALAPPDATA"], "Electrum")
+        return os.path.join(os.environ["LOCALAPPDATA"], ecx.DATADIR_WINDOWS)  # ECX
     else:
         #raise Exception("No home directory found in environment variables.")
         return
