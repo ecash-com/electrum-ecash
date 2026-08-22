@@ -533,6 +533,13 @@ class Abstract_Wallet(ABC, Logger, EventListener):
 
     def can_have_lightning(self) -> bool:
         """ whether this wallet can create new channels """
+        # ECX: no Lightning. There is no LN infrastructure on this chain, and
+        # upstream's LN peers/watchtowers/swap servers are all Bitcoin ones.
+        # This single chokepoint prevents channel creation; the LN code itself
+        # is deliberately left in place -- it is referenced ~200 times in this
+        # file alone, and excising it would forfeit clean upstream merges
+        # forever. Unreachable code costs us nothing; a permanent conflict does.
+        return False
         # we want static_remotekey to be a wallet address
         if not self.txin_type == 'p2wpkh':
             return False
