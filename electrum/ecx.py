@@ -94,3 +94,32 @@ BLOCK_EXPLORERS = {
     'explorer.alpha.ecash.ninja': ('https://explorer.alpha.ecash.ninja/',
                                    {'tx': 'tx/', 'addr': 'address/'}),
 }
+
+
+class NotReplayProtectedException(Exception):
+    """Raised when a transaction would be broadcast without replay protection."""
+
+
+def assert_replay_protected(tx) -> None:
+    """Refuse to broadcast a transaction that could replay onto Bitcoin.
+
+    Two conditions, both required, per ECX's IsFinalTx:
+      - nLockTime == LOCKTIME, the magic 'final on ECX, never final on BTC' value
+      - at least one input with nSequence != 0xffffffff, or nLockTime is ignored
+        entirely and the transaction is replayable despite carrying the marker
+
+    Electrum always satisfies both (see wallet.get_locktime_for_new_transaction,
+    and nsequence defaults of 0xfffffffe / 0xfffffffd), so this never fires in
+    normal use. It exists because the failure it guards against is silent and
+    irreversible: the transaction confirms on ECX, someone rebroadcasts it on
+    Bitcoin, and the user's BTC moves too.
+    """
+    if tx.locktime != LOCKTIME:
+        raise NotReplayProtectedException(
+            f"refusing to broadcast: nLockTime is {tx.locktime}, expected {LOCKTIME}. "
+            f"This transaction could be replayed onto Bitcoin and move real BTC.")
+    if all(txin.nsequence == SEQUENCE_FINAL for txin in tx.inputs()):
+        raise NotReplayProtectedException(
+            f"refusing to broadcast: every input has nSequence == 0x{SEQUENCE_FINAL:08x}, "
+            f"so nLockTime is not enforced and the replay protection is inert. "
+            f"This transaction could be replayed onto Bitcoin and move real BTC.")

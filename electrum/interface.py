@@ -59,6 +59,7 @@ from . import blockchain
 from .blockchain import Blockchain, HEADER_SIZE, CHUNK_SIZE
 from . import bitcoin
 from .bitcoin import DummyAddress, DummyAddressUsedInTxException
+from . import ecx  # ECX: chain parameters
 from . import constants
 from .i18n import _
 from .logging import Logger
@@ -1455,6 +1456,7 @@ class Interface(Logger):
             timeout = self.network.get_network_timeout_seconds(NetworkTimeout.Urgent)
         if any(DummyAddress.is_dummy_address(txout.address) for txout in tx.outputs()):
             raise DummyAddressUsedInTxException("tried to broadcast tx with dummy address!")
+        ecx.assert_replay_protected(tx)  # ECX: never put an unprotected tx on the wire
         try:
             out = await self.session.send_request('blockchain.transaction.broadcast', [rawtx], timeout=timeout)
             # note: both 'out' and exception messages are untrusted input from the server
@@ -1485,6 +1487,7 @@ class Interface(Logger):
         for tx in txs:
             if any(DummyAddress.is_dummy_address(txout.address) for txout in tx.outputs()):
                 raise DummyAddressUsedInTxException("tried to broadcast tx with dummy address!")
+            ecx.assert_replay_protected(tx)  # ECX: never put an unprotected tx on the wire
         try:
             res = await self.session.send_request('blockchain.transaction.broadcast_package', [rawtxs], timeout=timeout)
         except aiorpcx.jsonrpc.CodeMessageError as e:
