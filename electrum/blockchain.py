@@ -30,6 +30,7 @@ from . import util
 from .bitcoin import hash_encode
 from .crypto import sha256d
 from . import constants
+from . import ecx  # ECX: chain parameters
 from .util import bfh, with_lock
 from .logging import Logger
 
@@ -594,6 +595,14 @@ class Blockchain(Logger):
         if constants.net.TESTNET:
             return 0
         if index == -1:
+            return MAX_TARGET
+        # ECX: the fork block resets difficulty to powLimit
+        # (`bnNew = bnPowLimit` in src/pow.cpp), which GetCompact()s to
+        # 0x1d00ffff == MAX_TARGET. Authoritative, so it is checked before the
+        # checkpoints: it must hold even with a checkpoints.json that predates
+        # the fork (upstream's stops ~10k blocks short of it) or one copied
+        # from Bitcoin.
+        if index == ecx.FORK_TARGET_OVERRIDE_CHUNK:
             return MAX_TARGET
         if index < len(self.checkpoints):
             h, t = self.checkpoints[index]
