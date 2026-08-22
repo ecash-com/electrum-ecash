@@ -1,0 +1,58 @@
+# Upstream tests that our intentional changes invalidate.
+#
+# Consumed by contrib/ecx/run-tests.sh. Upstream's test files are deliberately
+# NOT edited: editing them would conflict on every rebase. Instead we deselect
+# here, so the suite stays green and any NEW breakage is immediately visible.
+#
+# Re-verify this list after each rebase onto a new upstream release:
+#   contrib/ecx/run-tests.sh --audit
+
+# URI scheme is ecx:, not bitcoin:  [commit: ecx: URI scheme]
+tests/test_payment_identifier.py::TestPaymentIdentifier::test_bip21
+tests/test_payment_identifier.py::TestPaymentIdentifier::test_invoice_from_payment_identifier
+tests/test_util.py::TestUtil::test_parse_URI_address
+tests/test_util.py::TestUtil::test_parse_URI_address_amount
+tests/test_util.py::TestUtil::test_parse_URI_address_label
+tests/test_util.py::TestUtil::test_parse_URI_address_message
+tests/test_util.py::TestUtil::test_parse_URI_address_request_url
+tests/test_util.py::TestUtil::test_parse_URI_ignore_args
+tests/test_util.py::TestUtil::test_parse_URI_lightning_consistency
+tests/test_util.py::TestUtil::test_parse_URI_multiple_args
+tests/test_util.py::TestUtil::test_parse_URI_no_address_request_url
+tests/test_util.py::TestUtil::test_parse_URI_unsupported_req_key
+
+# Submarine swaps require Lightning, which is disabled  [commit: disable Lightning]
+tests/test_submarine_swaps.py::TestSwapClaim::test_forward_swap_does_not_refund_after_learning_the_preimage
+tests/test_submarine_swaps.py::TestSwapClaim::test_forward_swap_extracts_preimage_from_funding_utxo
+tests/test_submarine_swaps.py::TestSwapClaim::test_forward_swap_fails_swap_when_refund_tx_confirms
+tests/test_submarine_swaps.py::TestSwapClaim::test_forward_swap_keeps_htlcs_until_refund_tx_is_deeply_confirmed
+tests/test_submarine_swaps.py::TestSwapClaim::test_forward_swap_refunds_funding_utxo_after_expiry
+tests/test_submarine_swaps.py::TestSwapClaim::test_forward_swap_stops_watching_after_claim_tx_is_deeply_confirmed
+tests/test_submarine_swaps.py::TestSwapClaim::test_reverse_swap_claims_to_external_output
+tests/test_submarine_swaps.py::TestSwapClaim::test_reverse_swap_does_not_claim_against_an_unconfirmed_refund_tx
+tests/test_txbatcher.py::TestTxBatcher::test_sweep_from_submarine_swap
+
+# asserts exact tx hex/txid; nLockTime is now 499999999  [commit: replay-protection nLockTime]
+#
+# NOTE test_rbf is deselected whole, which is coarser than we would like: only its
+# _rbf_sufficient_fee_increase_adding_outputs_to_base_tx subtest is affected, and
+# pytest --deselect cannot target an individual subtest. The rest of test_rbf still
+# passes; re-check it by hand if RBF behaviour is ever touched.
+tests/test_wallet_vertical.py::TestWalletSending::test_rbf
+tests/plugins/test_timelock_recovery.py::TestTimelockRecovery::test_make_unsigned_alert_tx
+tests/plugins/test_timelock_recovery.py::TestTimelockRecovery::test_make_unsigned_cancellation_tx
+tests/plugins/test_timelock_recovery.py::TestTimelockRecovery::test_make_unsigned_recovery_tx
+tests/test_commands.py::TestCommandsTestnet::test_bumpfee
+tests/test_wallet_vertical.py::TestWalletHistory_HelperFns::test_get_tx_status_feerate_for_local_2of3_multisig_partial_tx
+tests/test_wallet_vertical.py::TestWalletSending::test_sending_between_p2sh_1of2_and_p2wpkh_p2sh
+tests/test_wallet_vertical.py::TestWalletSending::test_sending_between_p2sh_2of3_and_uncompressed_p2pkh
+tests/test_wallet_vertical.py::TestWalletSending::test_sending_between_p2wpkh_and_compressed_p2pkh
+tests/test_wallet_vertical.py::TestWalletSending::test_sending_between_p2wsh_2of3_and_p2wsh_p2sh_2of2
+tests/test_wallet_vertical.py::TestWalletSending::test_sighash_warnings_beyond_gap_limit
+
+# broadcasts a hardcoded locktime=0 tx; the broadcast guard correctly refuses it
+tests/test_interface.py::TestInterface::test_transaction_broadcast
+# Pre-existing upstream failure: also fails on a pristine 4.8.1 checkout, so it
+# is NOT ours. Timing-sensitive. Re-check on each rebase; if upstream fixes it,
+# drop this line.
+tests/test_interface.py::TestInterface::test_we_disconnect_on_incoming_notification_spam
