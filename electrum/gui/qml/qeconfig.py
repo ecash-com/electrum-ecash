@@ -8,6 +8,7 @@ from electrum.bitcoin import TOTAL_COIN_SUPPLY_LIMIT_IN_BTC
 from electrum.i18n import set_language, get_gui_lang_names
 from electrum.logging import get_logger
 from electrum.util import base_unit_name_to_decimal_point
+from electrum import ecx  # ECX: chain parameters
 from electrum.gui import messages
 
 from .qetypes import QEAmount
@@ -101,7 +102,7 @@ class QEConfig(AuthMixin, QObject):
         decimal_point = base_unit_name_to_decimal_point(self.config.get_base_unit())
         max_digits_before_dp = (
             len(str(TOTAL_COIN_SUPPLY_LIMIT_IN_BTC))
-            + (base_unit_name_to_decimal_point("BTC") - decimal_point))
+            + (base_unit_name_to_decimal_point(ecx.TICKER) - decimal_point))  # ECX: was "BTC"
         exp = '^[0-9]{0,%d}' % max_digits_before_dp
         decimal_point += extra_precision
         if decimal_point > 0:

@@ -52,6 +52,10 @@ tests/test_wallet_vertical.py::TestWalletSending::test_sighash_warnings_beyond_g
 
 # broadcasts a hardcoded locktime=0 tx; the broadcast guard correctly refuses it
 tests/test_interface.py::TestInterface::test_transaction_broadcast
+# asserts the literal fee-rate unit string, which is now szat/vB
+#   [commit: rename the smallest unit to szat]
+tests/test_wallet_vertical.py::TestWalletHistory_HelperFns::test_get_tx_status_feerate_for_local_2of3_multisig_signed_tx
+
 # Pre-existing upstream failure: also fails on a pristine 4.8.1 checkout, so it
 # is NOT ours. Timing-sensitive. Re-check on each rebase; if upstream fixes it,
 # drop this line.

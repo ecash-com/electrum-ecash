@@ -122,8 +122,10 @@ DATADIR_WINDOWS = "Electrum eCash"
 # Only the names change. Showing "mBTC" for an ECX balance is the same class of
 # error as linking a Bitcoin block explorer -- it names the wrong chain.
 TICKER = 'ECX'
-BASE_UNITS = {TICKER: 8, 'm' + TICKER: 5, 'bits': 2, 'sat': 0}
-BASE_UNITS_LIST = [TICKER, 'm' + TICKER, 'bits', 'sat']
+# The smallest unit is the "szat" (after Sztorc), not the satoshi.
+SMALLEST_UNIT = 'szat'
+BASE_UNITS = {TICKER: 8, 'm' + TICKER: 5, 'bits': 2, SMALLEST_UNIT: 0}
+BASE_UNITS_LIST = [TICKER, 'm' + TICKER, 'bits', SMALLEST_UNIT]
 
 
 # -- Servers & explorers -----------------------------------------------------
