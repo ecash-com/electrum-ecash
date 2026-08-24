@@ -5,6 +5,7 @@ from PyQt6.QtGui import QPixmap
 from PyQt6.QtWidgets import QCheckBox, QLabel, QHBoxLayout, QVBoxLayout, QWidget
 
 from electrum.i18n import _
+from electrum import ecx  # ECX: chain parameters
 from electrum.wizard import ServerConnectWizard
 from electrum.gui.qt.network_dialog import ProxyWidget, ServerWidget
 from electrum.gui.qt.util import icon_path
@@ -36,7 +37,7 @@ class QEServerConnectWizard(ServerConnectWizard, QEAbstractWizard):
 class WCWelcome(WizardComponent):
     def __init__(self, parent, wizard):
         WizardComponent.__init__(self, parent, wizard, title='Network Configuration')
-        self.wizard_title = _('Electrum Bitcoin Wallet')
+        self.wizard_title = ecx.APP_NAME
 
         self.first_help_label = QLabel()
         self.first_help_label.setText(_("Optional settings to customize your network connection") + ":")
