@@ -194,18 +194,6 @@ Section
   WriteRegStr HKCU "Software\Classes\ecx" "URL Protocol" ""
   WriteRegStr HKCU "Software\Classes\ecx" "DefaultIcon" "$\"$INSTDIR\electrum.ico, 0$\""
   WriteRegStr HKCU "Software\Classes\ecx\shell\open\command" "" "$\"$INSTDIR\electrum-${PRODUCT_VERSION}.exe$\" $\"%1$\""
-  WriteRegStr HKCU "Software\Classes\lightning" "" "URL:lightning Protocol"
-  WriteRegStr HKCU "Software\Classes\lightning" "URL Protocol" ""
-  WriteRegStr HKCU "Software\Classes\lightning" "DefaultIcon" "$\"$INSTDIR\electrum.ico, 0$\""
-  WriteRegStr HKCU "Software\Classes\lightning\shell\open\command" "" "$\"$INSTDIR\electrum-${PRODUCT_VERSION}.exe$\" $\"%1$\""
-  WriteRegStr HKCU "Software\Classes\lnurlp" "" "URL:lnurlp Protocol"
-  WriteRegStr HKCU "Software\Classes\lnurlp" "URL Protocol" ""
-  WriteRegStr HKCU "Software\Classes\lnurlp" "DefaultIcon" "$\"$INSTDIR\electrum.ico, 0$\""
-  WriteRegStr HKCU "Software\Classes\lnurlp\shell\open\command" "" "$\"$INSTDIR\electrum-${PRODUCT_VERSION}.exe$\" $\"%1$\""
-  WriteRegStr HKCU "Software\Classes\lnurlw" "" "URL:lnurlw Protocol"
-  WriteRegStr HKCU "Software\Classes\lnurlw" "URL Protocol" ""
-  WriteRegStr HKCU "Software\Classes\lnurlw" "DefaultIcon" "$\"$INSTDIR\electrum.ico, 0$\""
-  WriteRegStr HKCU "Software\Classes\lnurlw\shell\open\command" "" "$\"$INSTDIR\electrum-${PRODUCT_VERSION}.exe$\" $\"%1$\""
 
   ;Adds an uninstaller possibility to Windows Uninstall or change a program section
   WriteRegStr HKCU "${PRODUCT_UNINST_KEY}" "DisplayName" "$(^Name)"
@@ -237,6 +225,7 @@ Section "Uninstall"
   RMDir  "$SMPROGRAMS\${PRODUCT_NAME}"
 
   DeleteRegKey HKCU "Software\Classes\ecx"
+  ; ECX: no longer registered, but removed here to clean up older installs
   DeleteRegKey HKCU "Software\Classes\lightning"
   DeleteRegKey HKCU "Software\Classes\lnurlp"
   DeleteRegKey HKCU "Software\Classes\lnurlw"
