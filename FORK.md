@@ -64,7 +64,7 @@ Data lives in `~/.electrum-ecash`, never `~/.electrum`. To throw away all local
 state (wallets included) and resync: `rm -rf ~/.electrum-ecash`.
 
 > **Careful with the test suite.** Some upstream tests instantiate a config
-> against the real data directory and persist settings into it — e.g.
+> against the real data directory and persist settings into it -- e.g.
 > `tests/test_onion_message.py` leaves `lightning_forward_payments: true` in
 > `~/.electrum-ecash/config`, which then logs a scary mainnet warning at every
 > startup. Harmless, but delete the key if you see it. (On stock Electrum this
@@ -86,15 +86,15 @@ wallet.
 
 | Change | Why |
 |---|---|
-| `blockchain.py` — reset difficulty at the fork chunk | ECX sets `bnNew = bnPowLimit` at the fork block. Without this, every ECX header fails PoW validation. |
-| `wallet.py` — `nLockTime = 499999999` on all new txs | ECX's replay-protection marker: final on ECX, permanently non-final on Bitcoin. |
-| `interface.py` — refuse to broadcast unprotected txs | Defence in depth. The failure it prevents is silent and irreversible. |
-| `wallet.py` — disable Lightning | No LN infrastructure on ECX. |
-| `util.py` — `~/.electrum-ecash` | Otherwise this shares wallet files and headers with the user's real Bitcoin Electrum and corrupts both. |
-| `bip21.py` + packaging — `ecx:` URI scheme | **Money-loss risk.** Claiming `bitcoin:` would let this wallet answer a BTC invoice with an ECX payment. |
-| `util.py` — ECX block explorers | Shared pre-fork history means a Bitcoin explorer renders a real BTC tx for a pre-fork txid. The wrong-chain link looks right. |
-| `constants.py` — `GIT_REPO_URL` | Stops our crash reports going to upstream's crashhub. |
-| `chains/mainnet/servers.json` — ECX servers | A Bitcoin server passes every check Electrum makes (see below). |
+| `blockchain.py` -- reset difficulty at the fork chunk | ECX sets `bnNew = bnPowLimit` at the fork block. Without this, every ECX header fails PoW validation. |
+| `wallet.py` -- `nLockTime = 499999999` on all new txs | ECX's replay-protection marker: final on ECX, permanently non-final on Bitcoin. |
+| `interface.py` -- refuse to broadcast unprotected txs | Defence in depth. The failure it prevents is silent and irreversible. |
+| `wallet.py` -- disable Lightning | No LN infrastructure on ECX. |
+| `util.py` -- `~/.electrum-ecash` | Otherwise this shares wallet files and headers with the user's real Bitcoin Electrum and corrupts both. |
+| `bip21.py` + packaging -- `ecx:` URI scheme | **Money-loss risk.** Claiming `bitcoin:` would let this wallet answer a BTC invoice with an ECX payment. |
+| `util.py` -- ECX block explorers | Shared pre-fork history means a Bitcoin explorer renders a real BTC tx for a pre-fork txid. The wrong-chain link looks right. |
+| `constants.py` -- `GIT_REPO_URL` | Stops our crash reports going to upstream's crashhub. |
+| `chains/mainnet/servers.json` -- ECX servers | A Bitcoin server passes every check Electrum makes (see below). |
 
 Bitcoin mainnet is **not** retained. `mainnet` *is* ECX, so there is no way to
 accidentally broadcast onto Bitcoin.
@@ -105,9 +105,9 @@ Which file is the actual app icon, per platform:
 
 | Platform | File | Wired in |
 |---|---|---|
-| **macOS** | `electrum.icns` (1024) | `contrib/osx/pyinstaller.spec:16,119,131` — .app bundle, Dock, Finder |
+| **macOS** | `electrum.icns` (1024) | `contrib/osx/pyinstaller.spec:16,119,131` -- .app bundle, Dock, Finder |
 | **Windows** | `electrum.ico` (multi-size) | `contrib/build-wine/pyinstaller.spec:15,124` (the .exe) and `electrum.nsi:75,171,195,216` (installer, `ecx:` URI, Add/Remove Programs) |
-| **Linux** | `electrum.png` (128) | `setup.py:39-40` → `share/pixmaps` + `hicolor/128x128/apps`; `electrum.desktop:10` `Icon=electrum`; AppImage copies it to `$APPDIR/electrum.png` |
+| **Linux** | `electrum.png` (128) | `setup.py:39-40` -> `share/pixmaps` + `hicolor/128x128/apps`; `electrum.desktop:10` `Icon=electrum`; AppImage copies it to `$APPDIR/electrum.png` |
 | **Android** | `android_electrum_icon_legacy.png` (192) | `contrib/android/buildozer_qml.spec:88` |
 | in-app, all | `electrum.png` | `gui/qt/__init__.py:168`, `main_window.py:256` (window + taskbar) |
 
@@ -131,12 +131,12 @@ slices; the `.ico` embeds 16/24/32/48/64/128/256.
 
 **Four files it deliberately does not touch, because they are artwork rather
 than scalings:**
-- `electrum_text.png` — wordmark, contains lettering
-- `electrum_darkblue.svg`, `electrum_lightblue.svg` — vector sources
-- `electrumb.png` — non-square, revealer plugin
+- `electrum_text.png` -- wordmark, contains lettering
+- `electrum_darkblue.svg`, `electrum_lightblue.svg` -- vector sources
+- `electrumb.png` -- non-square, revealer plugin
 
 **Also note** `electrum_dark_icon.png` and `electrum_light_icon.png` are the
-system-tray icons, and upstream ships them as two *different* images — one
+system-tray icons, and upstream ships them as two *different* images -- one
 tuned for dark menu bars, one for light. The script writes both from the same
 master, so check contrast under both themes and hand-supply variants if the
 logo does not read on one of them.
@@ -145,7 +145,7 @@ logo does not read on one of them.
 
 - Checkpoints are generated through chunk 481 (height 971,711), pinning 4
   post-fork chunks. Regenerate at every phase switch with
-  `contrib/ecx/make-checkpoints.py` — see "Per-phase rebuilds" below.
+  `contrib/ecx/make-checkpoints.py` -- see "Per-phase rebuilds" below.
 - `testnet`/`signet`/`regtest` still point at Bitcoin's. The locktime change is
   unconditional, so they produce ECX-style transactions; repoint them at ECX's
   equivalents (ports 18533/38533/48533) before relying on them.
@@ -155,8 +155,8 @@ logo does not read on one of them.
 
 ## How this client knows it is on ECX and not Bitcoin
 
-ECX inherits Bitcoin's genesis block, so Electrum's normal chain-identity check —
-comparing `server.features` `genesis_hash` — passes against a Bitcoin server. Two
+ECX inherits Bitcoin's genesis block, so Electrum's normal chain-identity check --
+comparing `server.features` `genesis_hash` -- passes against a Bitcoin server. Two
 things actually separate the chains:
 
 1. **The difficulty-reset patch (C1), which is the primary guard.**
@@ -166,7 +166,7 @@ things actually separate the chains:
    post-fork block. Verified against a live Bitcoin Electrum server.
 
 2. **Checkpoints**, which pin real post-fork block hashes. These are what separate
-   this chain from another that *also* reset difficulty at the same height — the
+   this chain from another that *also* reset difficulty at the same height -- the
    bits check alone cannot see that difference.
 
 So checkpoints are defence in depth and a startup optimisation, not the only thing
@@ -175,7 +175,7 @@ command, and (2) is a real gap without them.
 
 ## Maintaining the fork
 
-The fork is a patch series on a **signed** upstream tag — never on `master`,
+The fork is a patch series on a **signed** upstream tag -- never on `master`,
 so every release has verifiable provenance.
 
 ```sh
@@ -183,7 +183,7 @@ git tag -v 4.8.1                                  # verify upstream's signature
 git rebase --onto <new-tag> <old-tag> ecx/<old-tag>
 ```
 
-One branch per upstream release (`ecx/4.8.1`, `ecx/4.9.0`, …). Old branches are
+One branch per upstream release (`ecx/4.8.1`, `ecx/4.9.0`, ...). Old branches are
 never force-pushed, so released history and its tags stay valid. `master`
 tracks upstream untouched.
 
@@ -194,9 +194,9 @@ contrib/ecx/run-tests.sh            # must be green
 contrib/ecx/run-tests.sh --audit    # catches a stale known-failures list
 ```
 
-The functions we patch are cold upstream — `get_target`, `can_have_lightning`
+The functions we patch are cold upstream -- `get_target`, `can_have_lightning`
 and `user_dir` saw **zero** commits in three years, and
-`get_locktime_for_new_transaction` saw one — so conflicts should be rare. Keep
+`get_locktime_for_new_transaction` saw one -- so conflicts should be rare. Keep
 it that way: every line added to the diff is a line to be re-merged forever.
 
 ## Per-phase rebuilds
@@ -213,7 +213,7 @@ Bitcoin at a different height:
 
 Between alpha's fork and beta's, the alpha chain has its own blocks while the beta
 chain still has Bitcoin's. So **alpha checkpoints past chunk 478 make a beta build
-reject the beta chain outright** — the client refuses to sync at all. Loud rather
+reject the beta chain outright** -- the client refuses to sync at all. Loud rather
 than silent, but it means checkpoints and `ECASH_HEIGHT` are a matched pair.
 
 Switching phase:
@@ -222,7 +222,7 @@ Switching phase:
 # 1. one line in electrum/ecx.py
 ECASH_HEIGHT = 967680
 
-# 2. resync from scratch — the old chain's headers are a different chain
+# 2. resync from scratch -- the old chain's headers are a different chain
 rm -rf ~/.electrum-ecash/blockchain_headers ~/.electrum-ecash/forks
 .venv/bin/python ./run_electrum daemon -d      # wait for getinfo to catch up
 
@@ -235,15 +235,15 @@ contrib/ecx/check.sh && contrib/ecx/run-tests.sh
 ```
 
 `make-checkpoints.py` refuses to run if the chain it is reading did not reset
-difficulty exactly at `ECASH_HEIGHT` — that check is what stops you generating
+difficulty exactly at `ECASH_HEIGHT` -- that check is what stops you generating
 beta checkpoints from an alpha chain, or from Bitcoin. It also refuses if any
 pre-fork entry would change, and if the fork-chunk target is not `MAX_TARGET`
 (which would mean C1 was not applied first; `get_checkpoints()` calls
 `get_target()`, so the order matters).
 
 It leaves a `--margin` of 10 chunks below the tip unpinned by default. Post-fork
-difficulty starts at minimum — the alpha chain was mining ~1.85 blocks/min against
-Bitcoin's 0.1 — so recent blocks are comparatively cheap to reorg and should not
+difficulty starts at minimum -- the alpha chain was mining ~1.85 blocks/min against
+Bitcoin's 0.1 -- so recent blocks are comparatively cheap to reorg and should not
 be pinned.
 
 ## Upstream

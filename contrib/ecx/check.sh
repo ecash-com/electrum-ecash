@@ -46,6 +46,16 @@ print("  ok" if not bad else "")
 sys.exit(bad)
 PY
 
+# Upstream bans non-ASCII across the tree as a homoglyph-attack defence, and CI
+# enforces it. Run it here too: em-dashes in our markdown broke the build once.
+echo "== no stray unicode (upstream's ban_unicode) =="
+if "$PY" ./contrib/ban_unicode.py > /tmp/.ecx_unicode.$$ 2>&1; then
+    echo "  ok"
+else
+    head -20 /tmp/.ecx_unicode.$$; rc=1
+fi
+rm -f /tmp/.ecx_unicode.$$
+
 echo "== every '# ECX:' marked file parses =="
 "$PY" - <<'PY' || rc=1
 import ast, pathlib, sys

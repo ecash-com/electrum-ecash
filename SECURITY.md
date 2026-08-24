@@ -1,12 +1,12 @@
 # Reporting a vulnerability
 
 **This is Electrum eCash, a fork.** Report issues here, not to the Electrum
-developers — they do not maintain this software and cannot fix it.
+developers -- they do not maintain this software and cannot fix it.
 
 ## In this fork's own code
 
-Anything in the ECX changes — the fork's ~30 commits on top of upstream `4.8.1`,
-listed by `git log 4.8.1..ecx/4.8.1` or `grep -rn '# ECX:' electrum/` — should be
+Anything in the ECX changes -- the fork's ~30 commits on top of upstream `4.8.1`,
+listed by `git log 4.8.1..ecx/4.8.1` or `grep -rn '# ECX:' electrum/` -- should be
 reported privately here:
 
 - (preferred) GitHub's ["Report a
@@ -28,7 +28,7 @@ before it is fixed.
 If the bug is in Electrum itself and is not caused by our changes, it affects
 Bitcoin Electrum users too, and upstream should hear about it first. Follow
 <https://github.com/spesmilo/electrum/blob/master/SECURITY.md> and report it to
-them — **do not** post it publicly here in the meantime. Let us know afterwards
+them -- **do not** post it publicly here in the meantime. Let us know afterwards
 so we can pick up their fix.
 
 ## Known accepted risks
