@@ -100,15 +100,51 @@ left unedited so they keep merging cleanly.
 
 ## Building binaries
 
-Upstream's tooling, unchanged and reproducible:
-[Linux tarball](contrib/build-linux/sdist/README.md) |
-[AppImage](contrib/build-linux/appimage/README.md) |
-[macOS](contrib/osx/README.md) |
-[Windows](contrib/build-wine/README.md) |
+CI builds unsigned artifacts on demand: Actions -> builds -> Run workflow, then
+pick a target (`all`, `windows`, `macos`, `appimage`, `tarball`, `android`).
+
+| Target | Notes |
+|---|---|
+| Windows | Docker + Wine, ~18 min |
+| macOS | **arm64 only** (see below), ~9 min |
+| AppImage | ~9 min |
+| tarball (x2) | `Electrum-eCash-<version>.tar.gz` |
+| Android | excluded from `all`; over an hour, and the QML GUI is barely exercised by this fork |
+
+Upstream's tooling otherwise unchanged:
+[Linux tarball](contrib/build-linux/sdist/README.md) *
+[AppImage](contrib/build-linux/appimage/README.md) *
+[macOS](contrib/osx/README.md) *
+[Windows](contrib/build-wine/README.md) *
 [Android](contrib/android/Readme.md)
 
-No signed releases are published yet. Code signing, notarization and
-reproducible-build attestation are outstanding -- see [FORK.md](FORK.md).
+**Nothing is signed.** No Developer ID, no notarization, no Authenticode, no GPG
+attestation. macOS and Windows will both warn on first launch. See
+[FORK.md](FORK.md#known-gaps).
+
+### macOS is arm64 only
+
+Upstream builds macOS on a pinned 11.7.10 Intel VM, because that is what makes
+the binary reproducible. Every hosted Intel macOS runner is retired (`macos-13`
+went on 2025-12-04) and GitHub drops x86_64 entirely after Fall 2027, so CI can
+only produce arm64. **The CI dmg will not run on an Intel Mac.** Intel coverage
+needs the pinned VM, or a `universal2` build, which is still upstream's open TODO.
+
+Three fixes were needed to build for Apple Silicon at all. They are **upstream
+bugs for arm64, not fork-specific** -- nobody had built Electrum for Apple
+Silicon before:
+
+- `contrib/osx/make_osx.sh` hardcoded `ARCHFLAGS="-arch x86_64"`, so every C
+  extension compiled for the wrong architecture on an arm64 host; Cython then
+  could not be imported, which surfaced as a confusing failure in an unrelated
+  package's build backend. Now `-arch $(uname -m)`.
+- `contrib/make_zbar.sh` needs an explicit `-liconv`: `iconv_open`/`iconv_close`
+  resolve implicitly from libSystem on x86_64 but not arm64.
+- `contrib/osx/pyinstaller.spec` hardcoded `target_arch='x86_64'`; now derived
+  from `platform.machine()`.
+
+All three leave upstream's Intel VM behaviour identical, and are separable
+commits if we ever offer them upstream -- they will need them by 2027.
 
 ## Maintaining the fork
 
