@@ -1,8 +1,9 @@
 name: locale
 
+# ECX: disabled. This uploads source strings to Electrum's Crowdin project, which
+# we do not own -- running it would push our modified strings into upstream's
+# translation memory. Re-enable only against a Crowdin project of our own.
 on:
-  push:
-    branches: [master]
   workflow_dispatch:
 
 permissions:

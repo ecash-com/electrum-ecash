@@ -1,8 +1,12 @@
 blank_issues_enabled: false
 contact_links:
-#  - name: Electrum Security Policy
-#    url: https://github.com/spesmilo/electrum/blob/master/SECURITY.md
-#    about: View security policy
-  - name: Community Forum
-    url: https://bitcointalk.org/index.php?board=98.0
-    about: Ask non-development-related questions here
+  # ECX: blob/ecx/4.8.1 not blob/master -- master is a pristine upstream mirror,
+  # so blob/master would serve Electrum's files, not ours.
+  # Was Electrum's bitcointalk board -- upstream's support forum, and the
+  # wrong place for questions about this fork.
+  - name: Security policy
+    url: https://github.com/ecash-com/electrum-ecash/blob/ecx/4.8.1/SECURITY.md
+    about: How to report a vulnerability privately
+  - name: What this fork changes
+    url: https://github.com/ecash-com/electrum-ecash/blob/ecx/4.8.1/FORK.md
+    about: The ECX changes, and the known gaps

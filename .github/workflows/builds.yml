@@ -1,8 +1,10 @@
 name: builds
 
+# ECX: the nightly schedule is disabled. GitHub runs scheduled workflows against
+# the DEFAULT branch, which here is `master` -- a pristine mirror of upstream. A
+# nightly would build Bitcoin Electrum, not this fork. Re-enable the cron only if
+# the repo's default branch is changed to ecx/<upstream-tag>.
 on:
-  schedule:
-    - cron: '30 2 * * *'   # 02:30 UTC daily
   workflow_dispatch:
     inputs:
       target:
@@ -61,7 +63,7 @@ jobs:
       - name: Upload Windows artifacts
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
         with:
-          name: electrum-windows-${{ github.sha }}
+          name: electrum-ecash-windows-${{ github.sha }}
           path: contrib/build-wine/dist/*
           retention-days: ${{ env.ARTIFACT_RETENTION }}
           if-no-files-found: error
@@ -120,7 +122,7 @@ jobs:
       - name: Upload Android APK
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
         with:
-          name: electrum-android-${{ env.APK_ARCH }}-${{ github.sha }}
+          name: electrum-ecash-android-${{ env.APK_ARCH }}-${{ github.sha }}
           path: dist/*
           retention-days: ${{ env.ARTIFACT_RETENTION }}
           if-no-files-found: error
@@ -158,7 +160,7 @@ jobs:
       - name: Upload AppImage
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
         with:
-          name: electrum-appimage-${{ github.sha }}
+          name: electrum-ecash-appimage-${{ github.sha }}
           path: dist/*.AppImage
           retention-days: ${{ env.ARTIFACT_RETENTION }}
           if-no-files-found: error
@@ -175,10 +177,10 @@ jobs:
         include:
           - variant: full
             omit_unclean: '0'
-            artifact_name: electrum-tarball
+            artifact_name: electrum-ecash-tarball
           - variant: source-only
             omit_unclean: '1'
-            artifact_name: electrum-sourceonly-tarball
+            artifact_name: electrum-ecash-sourceonly-tarball
     steps:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
