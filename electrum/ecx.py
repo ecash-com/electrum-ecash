@@ -81,6 +81,24 @@ URI_SCHEME = 'ecx'
 # import lines for no user benefit.
 APP_NAME = "Electrum eCash"
 
+# Our release number on top of the upstream base in version.py. The displayed
+# version is e.g. "4.8.1-ecx1": the upstream half tells a user or auditor exactly
+# which Electrum release this is built from, which matters because that is the
+# code that has been reviewed by everyone else.
+#
+# version.ELECTRUM_VERSION itself must stay bare "X.Y.Z" -- plugin.py feeds it to
+# StrictVersion, which rejects any suffix.
+RELEASE = 1
+
+SUMMARY = "eCash (ECX) Wallet"
+DESCRIPTION = ("A lightweight eCash (ECX) wallet, forked from Electrum. Startup is "
+               "instant because it works with servers that handle the heavy indexing.")
+
+
+def version_string(upstream_version: str) -> str:
+    """Display version, e.g. 4.8.1-ecx1."""
+    return f"{upstream_version}-ecx{RELEASE}"
+
 # Read by base_crash_reporter.py to detect a forked codebase and refuse to send
 # crash reports to upstream's crashhub. Upstream provides this hook for forks.
 GIT_REPO_URL = "https://github.com/ecash-com/electrum-ecash"

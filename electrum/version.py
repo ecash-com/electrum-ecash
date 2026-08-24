@@ -1,3 +1,6 @@
+# ECX: the UPSTREAM base version. Must stay bare 'X.Y.Z' -- plugin.py parses it
+# with StrictVersion. The user-visible version is ecx.version_string(), which
+# appends our release counter, e.g. '4.8.1-ecx1'.
 ELECTRUM_VERSION = '4.8.1'       # version of the client package
 
 PROTOCOL_VERSION_MIN = '1.4'     # electrum protocol

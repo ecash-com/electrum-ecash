@@ -635,7 +635,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger, QtEventListener):
         name = ecx.APP_NAME  # ECX: upstream asks forks to drop the "Electrum" name
         if constants.net.TESTNET:
             name += " " + constants.net.NET_NAME.capitalize()
-        return f"{name} {ELECTRUM_VERSION}"
+        return f"{name} {ecx.version_string(ELECTRUM_VERSION)}"  # ECX: e.g. 4.8.1-ecx1
 
     def watching_only_changed(self):
         name_and_version = self.get_app_name_and_version_str()
@@ -882,8 +882,8 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger, QtEventListener):
 
     def show_about(self):
         QMessageBox.about(self, ecx.APP_NAME,  # ECX
-                          (_("Version")+" %s" % ELECTRUM_VERSION + "\n\n" +
-                           _("A lightweight wallet for eCash (ECX), forked from Electrum.") + " " +
+                          (_("Version")+" %s" % ecx.version_string(ELECTRUM_VERSION) + "\n\n" +  # ECX
+                           _(ecx.DESCRIPTION) + " " +
                            _("You do not need to perform regular backups, because your wallet can be "
                               "recovered from a secret phrase that you can memorize or write on paper.") + " " +
                            _("Startup times are instant because it operates in conjunction with high-performance "
