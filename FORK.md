@@ -143,23 +143,35 @@ logo does not read on one of them.
 
 ## Known gaps
 
-- **Checkpoints past the fork are not yet generated, and they are required.**
-  Electrum's only chain-identity guard is the `server.features` genesis hash,
-  and ECX inherits Bitcoin's genesis, so a Bitcoin server passes it. Worse, the
-  difficulty-reset patch makes chunk `FORK_CHUNK - 1` return `MAX_TARGET` — the
-  easiest possible target — so real Bitcoin headers pass the PoW check too.
-  Until post-fork ECX block hashes are pinned in
-  `electrum/chains/mainnet/checkpoints.json`, **the client cannot tell an ECX
-  server from a Bitcoin one.** Do not ship a release handling real funds until
-  this is done. Generate them only after the difficulty patch is in place:
-  `get_checkpoints()` calls `get_target()`, so doing it in the wrong order
-  bakes Bitcoin's target in permanently.
+- Checkpoints are generated through chunk 481 (height 971,711), pinning 4
+  post-fork chunks. Regenerate at every phase switch with
+  `contrib/ecx/make-checkpoints.py` — see "Per-phase rebuilds" below.
 - `testnet`/`signet`/`regtest` still point at Bitcoin's. The locktime change is
   unconditional, so they produce ECX-style transactions; repoint them at ECX's
   equivalents (ports 18533/38533/48533) before relying on them.
 - Fiat rates are BTC-denominated and would price ECX at the BTC rate. Guarded
   only by `FX_USE_EXCHANGE_RATE` defaulting to off.
 - Branding (name, icons, `ELECTRUM_VERSION`) is untouched.
+
+## How this client knows it is on ECX and not Bitcoin
+
+ECX inherits Bitcoin's genesis block, so Electrum's normal chain-identity check —
+comparing `server.features` `genesis_hash` — passes against a Bitcoin server. Two
+things actually separate the chains:
+
+1. **The difficulty-reset patch (C1), which is the primary guard.**
+   `verify_header` compares bits *exactly* (`if bits != header['bits']`), not as a
+   PoW threshold. C1 makes us expect `0x1d00ffff` for the fork chunk; Bitcoin's
+   real header at that height carries `0x17023cc1`, so it is rejected on the first
+   post-fork block. Verified against a live Bitcoin Electrum server.
+
+2. **Checkpoints**, which pin real post-fork block hashes. These are what separate
+   this chain from another that *also* reset difficulty at the same height — the
+   bits check alone cannot see that difference.
+
+So checkpoints are defence in depth and a startup optimisation, not the only thing
+standing between a user and Bitcoin's chain. Ship them anyway: the cost is one
+command, and (2) is a real gap without them.
 
 ## Maintaining the fork
 
@@ -189,19 +201,50 @@ it that way: every line added to the diff is a line to be re-merged forever.
 
 ## Per-phase rebuilds
 
-ECX launches in three phases, and alpha/beta coins are destroyed and reissued
-at full launch. Each phase changes exactly one line — `ECASH_HEIGHT` in
-`electrum/ecx.py`:
+ECX launches in three phases, and alpha/beta coins are destroyed and reissued at
+full launch. **Alpha, beta and full are three different chains**, each forked from
+Bitcoin at a different height:
 
-| Phase | Height | Date |
-|---|---|---|
-| alpha | 963648 | 2026-08-23 |
-| beta | 967680 | 2026-09-20 |
-| full | 973728 | 2026-10-31 |
+| Phase | Height | Fork chunk | Bitcoin-identical through |
+|---|---|---|---|
+| alpha | 963648 | 478 | chunk 477 |
+| beta | 967680 | 480 | chunk 479 |
+| full | 973728 | 483 | chunk 482 |
 
-All three are exact multiples of 2016; `ecx.py` asserts it, since a
-non-boundary height would straddle a retarget chunk and need more than the
-current one-line override. Checkpoints must be regenerated per phase.
+Between alpha's fork and beta's, the alpha chain has its own blocks while the beta
+chain still has Bitcoin's. So **alpha checkpoints past chunk 478 make a beta build
+reject the beta chain outright** — the client refuses to sync at all. Loud rather
+than silent, but it means checkpoints and `ECASH_HEIGHT` are a matched pair.
+
+Switching phase:
+
+```sh
+# 1. one line in electrum/ecx.py
+ECASH_HEIGHT = 967680
+
+# 2. resync from scratch — the old chain's headers are a different chain
+rm -rf ~/.electrum-ecash/blockchain_headers ~/.electrum-ecash/forks
+.venv/bin/python ./run_electrum daemon -d      # wait for getinfo to catch up
+
+# 3. regenerate checkpoints
+.venv/bin/python contrib/ecx/make-checkpoints.py --dry-run
+.venv/bin/python contrib/ecx/make-checkpoints.py
+
+# 4. verify
+contrib/ecx/check.sh && contrib/ecx/run-tests.sh
+```
+
+`make-checkpoints.py` refuses to run if the chain it is reading did not reset
+difficulty exactly at `ECASH_HEIGHT` — that check is what stops you generating
+beta checkpoints from an alpha chain, or from Bitcoin. It also refuses if any
+pre-fork entry would change, and if the fork-chunk target is not `MAX_TARGET`
+(which would mean C1 was not applied first; `get_checkpoints()` calls
+`get_target()`, so the order matters).
+
+It leaves a `--margin` of 10 chunks below the tip unpinned by default. Post-fork
+difficulty starts at minimum — the alpha chain was mining ~1.85 blocks/min against
+Bitcoin's 0.1 — so recent blocks are comparatively cheap to reorg and should not
+be pinned.
 
 ## Upstream
 
