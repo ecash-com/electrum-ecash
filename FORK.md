@@ -99,6 +99,48 @@ wallet.
 Bitcoin mainnet is **not** retained. `mainnet` *is* ECX, so there is no way to
 accidentally broadcast onto Bitcoin.
 
+## Icons
+
+Which file is the actual app icon, per platform:
+
+| Platform | File | Wired in |
+|---|---|---|
+| **macOS** | `electrum.icns` (1024) | `contrib/osx/pyinstaller.spec:16,119,131` — .app bundle, Dock, Finder |
+| **Windows** | `electrum.ico` (multi-size) | `contrib/build-wine/pyinstaller.spec:15,124` (the .exe) and `electrum.nsi:75,171,195,216` (installer, `ecx:` URI, Add/Remove Programs) |
+| **Linux** | `electrum.png` (128) | `setup.py:39-40` → `share/pixmaps` + `hicolor/128x128/apps`; `electrum.desktop:10` `Icon=electrum`; AppImage copies it to `$APPDIR/electrum.png` |
+| **Android** | `android_electrum_icon_legacy.png` (192) | `contrib/android/buildozer_qml.spec:88` |
+| in-app, all | `electrum.png` | `gui/qt/__init__.py:168`, `main_window.py:256` (window + taskbar) |
+
+To replace them all from one master:
+
+```sh
+.venv/bin/pip install Pillow
+python3 contrib/ecx/make-icons.py path/to/master.png --dry-run   # preview
+python3 contrib/ecx/make-icons.py path/to/master.png
+```
+
+Master must be **square, at least 1024x1024, RGBA with a transparent
+background**. The script keeps upstream's filenames, so no code or packaging
+file changes.
+
+It regenerates `electrum.icns`, `electrum.ico`, `electrum.png`,
+`electrum_launcher.png`, `electrum_presplash.png`,
+`android_electrum_icon_legacy.png`, `electrum_darkblue_1.png`, and both tray
+icons. macOS `.icns` is built via `iconutil` from a full iconset including @2x
+slices; the `.ico` embeds 16/24/32/48/64/128/256.
+
+**Four files it deliberately does not touch, because they are artwork rather
+than scalings:**
+- `electrum_text.png` — wordmark, contains lettering
+- `electrum_darkblue.svg`, `electrum_lightblue.svg` — vector sources
+- `electrumb.png` — non-square, revealer plugin
+
+**Also note** `electrum_dark_icon.png` and `electrum_light_icon.png` are the
+system-tray icons, and upstream ships them as two *different* images — one
+tuned for dark menu bars, one for light. The script writes both from the same
+master, so check contrast under both themes and hand-supply variants if the
+logo does not read on one of them.
+
 ## Known gaps
 
 - **Checkpoints past the fork are not yet generated, and they are required.**
