@@ -1,6 +1,7 @@
 # -*- mode: python -*-
 import sys
 import os
+import platform
 from typing import TYPE_CHECKING
 
 from PyInstaller.utils.hooks import collect_data_files, collect_submodules, collect_dynamic_libs, copy_metadata
@@ -118,7 +119,11 @@ exe = EXE(
     upx=True,
     icon=ICONS_FILE,
     console=False,
-    target_arch='x86_64',  # TODO investigate building 'universal2'
+    # ECX: was hardcoded 'x86_64'. GitHub retired every Intel macOS runner
+    # (macos-13, Dec 2025) and drops x86_64 entirely after Fall 2027, so CI can
+    # only build arm64. Deriving from the host leaves upstream's pinned Intel VM
+    # producing x86_64 exactly as before.
+    target_arch=platform.machine(),  # TODO investigate building 'universal2'
 )
 
 app = BUNDLE(
