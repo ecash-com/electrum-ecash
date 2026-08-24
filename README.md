@@ -1,4 +1,4 @@
-# Electrum eCash — lightweight ECX wallet
+# Electrum eCash -- lightweight ECX wallet
 
 A fork of [Electrum](https://github.com/spesmilo/electrum) for **ECX**, the
 Layer Two Labs Bitcoin hard fork ("eCash").
@@ -12,7 +12,7 @@ Upstream: https://github.com/spesmilo/electrum  (v4.8.1)
 > **Not affiliated with, endorsed by, or supported by the Electrum developers or
 > Electrum Technologies GmbH.** Do not report issues with this software to them.
 > If you want the *Bitcoin* Electrum wallet, get it from
-> [electrum.org](https://electrum.org/) — not from here. This wallet cannot
+> [electrum.org](https://electrum.org/) -- not from here. This wallet cannot
 > connect to Bitcoin.
 
 > **⚠ Pre-release. Do not use with funds you cannot afford to lose.**
@@ -23,7 +23,7 @@ Upstream: https://github.com/spesmilo/electrum  (v4.8.1)
 ## What this is
 
 ECX is a Bitcoin hard fork. Everything key- and address-related is byte-identical
-to Bitcoin — same genesis block, same `bc` bech32 prefix, same WIF/xpub prefixes,
+to Bitcoin -- same genesis block, same `bc` bech32 prefix, same WIF/xpub prefixes,
 same SLIP-44 coin type. **A Bitcoin address is an ECX address**, and nothing in
 the string tells you which chain it belongs to.
 
@@ -95,27 +95,27 @@ contrib/ecx/check.sh              # static checks (undefined names, ecx imports)
 
 Exclusions are listed with their cause in
 `contrib/ecx/known-test-failures.txt`, and were established by diffing against a
-pristine `4.8.1` checkout — not assumed. Upstream's test files are deliberately
+pristine `4.8.1` checkout -- not assumed. Upstream's test files are deliberately
 left unedited so they keep merging cleanly.
 
 ## Building binaries
 
 Upstream's tooling, unchanged and reproducible:
-[Linux tarball](contrib/build-linux/sdist/README.md) ·
-[AppImage](contrib/build-linux/appimage/README.md) ·
-[macOS](contrib/osx/README.md) ·
-[Windows](contrib/build-wine/README.md) ·
+[Linux tarball](contrib/build-linux/sdist/README.md) |
+[AppImage](contrib/build-linux/appimage/README.md) |
+[macOS](contrib/osx/README.md) |
+[Windows](contrib/build-wine/README.md) |
 [Android](contrib/android/Readme.md)
 
 No signed releases are published yet. Code signing, notarization and
-reproducible-build attestation are outstanding — see [FORK.md](FORK.md).
+reproducible-build attestation are outstanding -- see [FORK.md](FORK.md).
 
 ## Maintaining the fork
 
 `master` tracks upstream untouched; our work lives on `ecx/<upstream-tag>`
 branches, rebased onto **signed** upstream tags so every release has verifiable
 provenance. ECX also relaunches twice more (beta and full), and each relaunch is
-a different chain — the procedure for both is in
+a different chain -- the procedure for both is in
 [FORK.md](FORK.md#maintaining-the-fork).
 
 ## Contributing
