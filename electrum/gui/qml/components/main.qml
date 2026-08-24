@@ -616,7 +616,7 @@ ApplicationWindow
             stack.pop()
         } else {
             var dialog = app.messageDialog.createObject(app, {
-                title: qsTr('Close Electrum?'),
+                title: qsTr('Close %1?').arg(APP_NAME),
                 yesno: true
             })
             dialog.accepted.connect(function() {

@@ -44,6 +44,7 @@ from electrum import bitcoin
 
 from electrum.bitcoin import NLOCKTIME_BLOCKHEIGHT_MAX, DummyAddress
 from electrum.i18n import _
+from electrum import ecx  # ECX: chain parameters
 from electrum.plugin import run_hook
 from electrum.transaction import SerializationError, Transaction, PartialTransaction, TxOutpoint, TxinDataFetchProgress
 from electrum.logging import get_logger
@@ -449,7 +450,7 @@ def show_transaction(
             d.broadcast_button.setVisible(False)
     except SerializationError as e:
         _logger.exception('unable to deserialize the transaction')
-        parent.show_critical(_("Electrum was unable to deserialize the transaction:") + "\n" + str(e))
+        parent.show_critical(_("{} was unable to deserialize the transaction:").format(ecx.APP_NAME) + "\n" + str(e))
     except UserCancelled:
         return
     else:

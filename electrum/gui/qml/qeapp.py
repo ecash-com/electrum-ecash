@@ -14,6 +14,7 @@ from PyQt6.QtGui import QGuiApplication
 from PyQt6.QtQml import qmlRegisterType, QQmlApplicationEngine
 
 import electrum
+from electrum import ecx  # ECX: chain parameters
 from electrum import version, constants
 from electrum.i18n import _
 from electrum.logging import Logger, get_logger
@@ -177,7 +178,7 @@ class QEAppController(BaseCrashReporter, QObject):
             global notification
             if not notification:
                 from plyer import notification
-            notification.notify('Electrum', message, app_icon=icon, app_name='Electrum')
+            notification.notify(ecx.APP_NAME, message, app_icon=icon, app_name=ecx.APP_NAME)  # ECX
         except ImportError:
             self.logger.warning('Notification: needs plyer; `python3 -m pip install plyer`')
         except Exception as e:
@@ -556,6 +557,7 @@ class ElectrumQmlApplication(QGuiApplication):
             'qt_version': QT_VERSION_STR,
             'pyqt_version': PYQT_VERSION_STR
         })
+        self.context.setContextProperty('APP_NAME', ecx.APP_NAME)  # ECX
         self.context.setContextProperty('UI_UNIT_NAME', {
             "FEERATE_SAT_PER_VBYTE": electrum.util.UI_UNIT_NAME_FEERATE_SAT_PER_VBYTE,
             "FEERATE_SAT_PER_VB":    electrum.util.UI_UNIT_NAME_FEERATE_SAT_PER_VB,

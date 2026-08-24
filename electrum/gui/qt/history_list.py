@@ -41,6 +41,7 @@ from PyQt6.QtWidgets import (QMenu, QHeaderView, QLabel, QPushButton, QComboBox,
 from electrum.gui import messages
 from electrum.address_synchronizer import TX_HEIGHT_LOCAL
 from electrum.i18n import _
+from electrum import ecx  # ECX: chain parameters
 from electrum.util import (block_explorer_URL, profiler, TxMinedInfo,
                            OrderedDictWithIndex, timestamp_to_datetime,
                            Satoshis, format_time)
@@ -683,7 +684,7 @@ class HistoryList(MyTreeView, AcceptFileDragDrop):
             self.main_window.show_message("\n\n".join([
                 _("This feature requires the 'matplotlib' Python library which is not "
                   "included in Electrum by default."),
-                _("If you run Electrum from source you can install matplotlib to use this feature."),
+                _("If you run {} from source you can install matplotlib to use this feature.").format(ecx.APP_NAME),
                 _("It is not possible to install matplotlib inside the binary executables "
                   "(e.g. AppImage or Windows installation).")
             ]))
@@ -850,7 +851,7 @@ class HistoryList(MyTreeView, AcceptFileDragDrop):
                 is_csv=csv_button.isChecked(),
             )
         except (IOError, os.error) as reason:
-            export_error_label = _("Electrum was unable to produce a transaction export.")
+            export_error_label = _("{} was unable to produce a transaction export.").format(ecx.APP_NAME)
             self.main_window.show_critical(export_error_label + "\n" + str(reason), title=_("Unable to export history"))
             return
         self.main_window.show_message(_("Your wallet history has been successfully exported."))

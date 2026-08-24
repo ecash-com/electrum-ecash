@@ -34,6 +34,7 @@ from PyQt6.QtWidgets import (QHBoxLayout, QVBoxLayout, QLabel, QGridLayout, QPus
                              QComboBox, QTabWidget, QWidget, QStackedWidget)
 
 from electrum.i18n import _
+from electrum import ecx  # ECX: chain parameters
 from electrum.util import (UserCancelled, quantize_feerate, profiler, NotEnoughFunds, NoDynamicFeeEstimates,
                            UserFacingException)
 from electrum.plugin import run_hook
@@ -266,7 +267,7 @@ class TxEditor(WindowModalDialog, SubmarineSwapMixin, Logger):
 
         def feerounding_onclick():
             text = (self.feerounding_text() + '\n\n' +
-                    _('To somewhat protect your privacy, Electrum tries to create change with similar precision to other outputs.') + ' ' +
+                    _('To somewhat protect your privacy, {} tries to create change with similar precision to other outputs.').format(ecx.APP_NAME) + ' ' +
                     _('At most 100 satoshis might be lost due to this rounding.') + ' ' +
                     _("You can disable this setting in '{}'.").format(_('Preferences')) + '\n' +
                     _('Also, dust is not kept as change, but added to the fee.')  + '\n' +

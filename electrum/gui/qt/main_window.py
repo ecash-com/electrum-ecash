@@ -303,8 +303,8 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger, QtEventListener):
         # Electrum download. See electrum/ecx.py:UPDATE_CHECK_URL.
         if ecx.UPDATE_CHECK_URL and not config.cv.AUTOMATIC_CENTRALIZED_UPDATE_CHECKS.is_set():
             choice = self.question(title="Electrum - " + _("Enable update check"),
-                                   msg=_("For security reasons we advise that you always use the latest version of Electrum.") + " " +
-                                       _("Would you like to be notified when there is a newer version of Electrum available?"))
+                                   msg=_("For security reasons we advise that you always use the latest version of {}.").format(ecx.APP_NAME) + " " +
+                                       _("Would you like to be notified when there is a newer version of {} available?").format(ecx.APP_NAME))
             config.AUTOMATIC_CENTRALIZED_UPDATE_CHECKS = bool(choice)
 
         self._update_check_thread = None
@@ -313,7 +313,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger, QtEventListener):
             # to prevent GC from getting in our way.
             def on_version_received(v):
                 if UpdateCheck.is_newer(v):
-                    self.update_check_button.setText(_("Update to Electrum {} is available").format(v))
+                    self.update_check_button.setText(_("Update to {} {{}} is available").format(ecx.APP_NAME).format(v))
                     self.update_check_button.clicked.connect(lambda: self.show_update_check(v))
                     self.update_check_button.show()
             self._update_check_thread = UpdateCheckThread()
@@ -732,7 +732,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger, QtEventListener):
         try:
             new_path = self.wallet.save_backup(backup_dir)
         except BaseException as reason:
-            self.show_critical(_("Electrum was unable to copy your wallet file to the specified location.") + "\n" + str(reason), title=_("Unable to create backup"))
+            self.show_critical(_("{} was unable to copy your wallet file to the specified location.").format(ecx.APP_NAME) + "\n" + str(reason), title=_("Unable to create backup"))
             return
         msg = _("A copy of your wallet file was created in")+" '%s'" % str(new_path)
         self.show_message(msg, title=_("Wallet backup created"))
@@ -823,7 +823,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger, QtEventListener):
             # Hence, this menu item will be at a "uniform location re macOS processes"
             preferences_action.setMenuRole(QAction.MenuRole.PreferencesRole)  # make sure OS recognizes it as preferences
             # Add another preferences item, to also have a "uniform location for Electrum between different OSes"
-            self.tools_menu.addAction(_("Electrum preferences"), self.settings_dialog)
+            self.tools_menu.addAction(_("{} preferences").format(ecx.APP_NAME), self.settings_dialog)
 
         self.tools_menu.addAction(_("&Network"), self.gui_object.show_network_dialog).setEnabled(bool(self.network))
         self.tools_menu.addAction(_("&Plugins"), self.gui_object.show_plugins_dialog)
@@ -918,7 +918,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger, QtEventListener):
         msg = ' '.join([
             _("Please report any bugs as issues on github:<br/>"),
             f'''<a href="{constants.GIT_REPO_ISSUES_URL}">{constants.GIT_REPO_ISSUES_URL}</a><br/><br/>''',
-            _("Before reporting a bug, upgrade to the most recent version of Electrum (latest release or git HEAD), and include the version number in your report."),
+            _("Before reporting a bug, upgrade to the most recent version of {} (latest release or git HEAD), and include the version number in your report.").format(ecx.APP_NAME),
             _("Try to explain not only what the bug is, but how it occurs.")
          ])
         self.show_message(msg, title="Electrum - " + _("Reporting Bugs"), rich_text=True)
@@ -1310,7 +1310,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger, QtEventListener):
 
         if not self.config.SWAPSERVER_URL and not self.config.SWAPSERVER_NPUB:
             if not self.question('\n'.join([
-                    _('Electrum uses Nostr in order to find liquidity providers.'),
+                    _('{} uses Nostr in order to find liquidity providers.').format(ecx.APP_NAME),
                     _('Do you want to enable Nostr?'),
             ])):
                 return None
@@ -2312,7 +2312,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger, QtEventListener):
         try:
             return tx_from_any(data)
         except BaseException as e:
-            self.show_critical(_("Electrum was unable to parse your transaction") + ":\n" + repr(e))
+            self.show_critical(_("{} was unable to parse your transaction").format(ecx.APP_NAME) + ":\n" + repr(e))
             return
 
     def import_channel_backup(self, encrypted: str):
@@ -2375,7 +2375,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger, QtEventListener):
                 with open(fileName, "rb") as f:
                     file_content = f.read()  # type: bytes
             except (ValueError, IOError, os.error) as reason:
-                self.show_critical(_("Electrum was unable to open your transaction file") + "\n" + str(reason),
+                self.show_critical(_("{} was unable to open your transaction file").format(ecx.APP_NAME) + "\n" + str(reason),
                                    title=_("Unable to read file or no transaction found"))
         if file_content is None:
             return None
@@ -2534,7 +2534,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger, QtEventListener):
             self.do_export_privkeys(filename, private_keys, csv_button.isChecked())
         except (IOError, os.error) as reason:
             txt = "\n".join([
-                _("Electrum was unable to produce a private key-export."),
+                _("{} was unable to produce a private key-export.").format(ecx.APP_NAME),
                 str(reason)
             ])
             self.show_critical(txt, title=_("Unable to create csv"))
@@ -2723,7 +2723,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger, QtEventListener):
             self.fx.trigger_update()
         run_hook('close_settings_dialog')
         if d.need_restart:
-            self.show_warning(_('Please restart Electrum to activate the new GUI settings'), title=_('Success'))
+            self.show_warning(_('Please restart {} to activate the new GUI settings').format(ecx.APP_NAME), title=_('Success'))
         else:
             # Some values might need to be updated if settings have changed.
             # For example 'Can send' in the lightning tab will change if the fees config is changed.
@@ -2739,7 +2739,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger, QtEventListener):
 
         for warning in list(warnings)[:3]:
             warning = ''.join([
-                _("Are you sure you want to close Electrum?"),
+                _("Are you sure you want to close {}?").format(ecx.APP_NAME),
                 '\n\n',
                 _("An ongoing operation requires you to stay online."),
                 '\n',
@@ -2986,7 +2986,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger, QtEventListener):
         self.showing_cert_mismatch_error = True
         self.show_critical(title=_("Certificate mismatch"),
                            msg=_("The SSL certificate provided by the main server did not match the fingerprint passed in with the --serverfingerprint option.") + "\n\n" +
-                               _("Electrum will now exit."))
+                               _("{} will now exit.").format(ecx.APP_NAME))
         self.showing_cert_mismatch_error = False
         self.close()
 

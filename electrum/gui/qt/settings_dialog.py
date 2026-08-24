@@ -32,6 +32,7 @@ from PyQt6.QtWidgets import (QComboBox,  QTabWidget, QDialog, QSpinBox,  QCheckB
                              QVBoxLayout, QGridLayout, QLineEdit, QWidget, QHBoxLayout)
 
 from electrum.i18n import _, get_gui_lang_names
+from electrum import ecx  # ECX: chain parameters
 from electrum import util
 from electrum.util import base_units_list, event_listener
 
@@ -121,7 +122,7 @@ class SettingsDialog(QDialog, QtEventListener):
             if not use_trampoline:
                 if not window.question('\n'.join([
                         _("Are you sure you want to disable trampoline?"),
-                        _("Without this option, Electrum will need to sync with the Lightning network on every start."),
+                        _("Without this option, {} will need to sync with the Lightning network on every start.").format(ecx.APP_NAME),
                         _("This may impact the reliability of your payments."),
                 ]), parent=self):
                     trampoline_cb.setCheckState(Qt.CheckState.Checked)

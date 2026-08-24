@@ -239,7 +239,7 @@ class ElectrumGui(BaseElectrumGui, Logger):
             submenu.addAction(_("Close"), window.close)
         m.addAction(_("Dark/Light"), self.toggle_tray_icon)
         m.addSeparator()
-        m.addAction(_("Exit Electrum"), self.app.quit)
+        m.addAction(_("Exit {}").format(ecx.APP_NAME), self.app.quit)
 
     def tray_icon(self):
         if self.dark_icon:
@@ -626,7 +626,7 @@ def standalone_exception_dialog(exception: Union[str, BaseException]) -> None:
         app = QApplication([])
 
     msg_box = QMessageBox()
-    msg_box.setWindowTitle(_("Error starting Electrum"))
+    msg_box.setWindowTitle(_("Error starting {}").format(ecx.APP_NAME))
     msg_box.setIcon(QMessageBox.Icon.Critical)
     msg_box.setText(_("An error occurred") + ":")
     msg_box.setInformativeText(str(exception))

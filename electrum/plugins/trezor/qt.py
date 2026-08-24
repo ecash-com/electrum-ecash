@@ -561,7 +561,7 @@ class SettingsDialog(WindowModalDialog):
                         "at any time by re-enabling passphrases and entering "
                         "its passphrase.")
             else:
-                msg = _("Your current Electrum wallet can only be used with "
+                msg = _("Your current wallet can only be used with "
                         "an empty passphrase.  You must create a separate "
                         "wallet for other passphrases as each one generates "
                         "a new set of addresses.")

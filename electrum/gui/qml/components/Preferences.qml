@@ -55,7 +55,7 @@ Pane {
                                 if (Config.language != currentValue) {
                                     Config.language = currentValue
                                     var dialog = app.messageDialog.createObject(app, {
-                                        text: qsTr('Please restart Electrum to activate the new GUI settings')
+                                        text: qsTr('Please restart %1 to activate the new GUI settings').arg(APP_NAME)
                                     })
                                     dialog.open()
                                 }
@@ -407,7 +407,7 @@ Pane {
                                     if (!checked) {
                                         var dialog = app.messageDialog.createObject(app, {
                                             title: qsTr('Are you sure?'),
-                                            text: qsTr('Electrum will have to download the Lightning Network graph, which is not recommended on mobile.'),
+                                            text: qsTr('%1 will have to download the Lightning Network graph, which is not recommended on mobile.').arg(APP_NAME),
                                             yesno: true
                                         })
                                         dialog.accepted.connect(function() {
