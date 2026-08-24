@@ -71,7 +71,12 @@ jobs:
 
   android:
     name: "build: Android (${{ inputs.android_arch || 'arm64-v8a' }})"
-    if: ${{ github.event_name != 'workflow_dispatch' || inputs.target == 'all' || inputs.target == 'android' }}
+    # ECX: excluded from `all` -- runs only when explicitly asked for.
+    # Android is not a target for us right now: the build takes over an hour, and
+    # the QML GUI it packages is largely unexercised by this fork (it had stale
+    # hardcoded 'BTC' unit lookups that only surfaced by reading the code).
+    # Left in the tree rather than deleted so it keeps merging cleanly.
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.target == 'android' }}
     runs-on: ubuntu-24.04
     timeout-minutes: 180
     env:
