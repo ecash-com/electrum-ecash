@@ -9,6 +9,14 @@ cd "$(dirname "$0")/../.."
 LIST=contrib/ecx/known-test-failures.txt
 PY=${PYTHON:-python3}
 
+# Isolate the data directory. Some upstream tests build a config against the
+# real user_dir() and persist settings into it -- tests/test_onion_message.py
+# leaves lightning_forward_payments=true in ~/.electrum-ecash/config, which then
+# logs an alarming mainnet warning on every startup. Point them at a temp dir.
+ELECTRUMDIR=$(mktemp -d)
+export ELECTRUMDIR
+trap 'rm -rf "$ELECTRUMDIR"' EXIT
+
 # bash 3.2 (macOS) has no mapfile
 KNOWN=()
 while IFS= read -r line; do KNOWN+=("$line"); done < <(grep -vE '^[[:space:]]*(#|$)' "$LIST")
