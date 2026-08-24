@@ -96,11 +96,12 @@ def all_subclasses(cls) -> Set:
 ca_path = certifi.where()
 
 
-base_units = {'BTC':8, 'mBTC':5, 'bits':2, 'sat':0}
+# ECX: denominate in ECX, not BTC. Same divisibility, different name.
+base_units = ecx.BASE_UNITS
 base_units_inverse = inv_dict(base_units)
-base_units_list = ['BTC', 'mBTC', 'bits', 'sat']  # list(dict) does not guarantee order
+base_units_list = ecx.BASE_UNITS_LIST  # list(dict) does not guarantee order
 
-DECIMAL_POINT_DEFAULT = 5  # mBTC
+DECIMAL_POINT_DEFAULT = 5  # mECX
 
 
 class UnknownBaseUnit(Exception): pass
