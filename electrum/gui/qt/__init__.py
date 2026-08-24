@@ -67,6 +67,7 @@ if sys.platform == "linux" and os.environ.get("APPIMAGE"):
     os.environ.setdefault("QT_QPA_PLATFORM", "xcb")
 
 from electrum.i18n import _, set_language
+from electrum import ecx  # ECX: chain parameters
 from electrum.plugin import run_hook
 from electrum.util import (UserCancelled, profiler, send_exception_to_crash_reporter,
                            WalletFileException, get_new_wallet_name, InvalidPassword,
