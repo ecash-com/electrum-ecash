@@ -21,14 +21,30 @@ else
 fi
 
 echo "== every module that uses ecx. also imports it =="
-missing=0
-while IFS= read -r f; do
-    case "$f" in */ecx.py) continue;; esac
-    grep -q "ecx\." "$f" || continue
-    grep -qE "^[[:space:]]*(from electrum import ecx|from \.+ import ecx|from electrum\.ecx import|import ecx)" "$f" \
-        || { echo "  MISSING import: $f"; missing=1; rc=1; }
-done < <(find electrum -name '*.py')
-[ "$missing" = 0 ] && echo "  ok"
+"$PY" - <<'PY' || rc=1
+import ast, pathlib, sys
+bad = 0
+for p in pathlib.Path("electrum").rglob("*.py"):
+    if p.name == "ecx.py":
+        continue
+    try:
+        tree = ast.parse(p.read_text(encoding="utf-8", errors="replace"))
+    except SyntaxError:
+        continue
+    # real attribute access on a name `ecx` -- not comments, not strings
+    uses = any(isinstance(n, ast.Attribute) and isinstance(n.value, ast.Name)
+               and n.value.id == "ecx" for n in ast.walk(tree))
+    if not uses:
+        continue
+    imported = any(
+        (isinstance(n, ast.ImportFrom) and any(a.name == "ecx" for a in n.names))
+        or (isinstance(n, ast.Import) and any(a.name.endswith("ecx") for a in n.names))
+        for n in ast.walk(tree))
+    if not imported:
+        print(f"  MISSING import: {p}"); bad = 1
+print("  ok" if not bad else "")
+sys.exit(bad)
+PY
 
 echo "== every '# ECX:' marked file parses =="
 "$PY" - <<'PY' || rc=1
