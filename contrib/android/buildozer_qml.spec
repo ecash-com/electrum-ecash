@@ -1,13 +1,13 @@
 [app]
 
 # (str) Title of your application
-title = Electrum
+title = Electrum eCash
 
 # (str) Package name
-package.name = Electrum
+package.name = electrum
 
 # (str) Package domain (needed for android/ios packaging)
-package.domain = org.electrum
+package.domain = com.ecash
 
 # (str) Source code where the main.py live
 source.dir = .

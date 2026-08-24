@@ -72,7 +72,7 @@ in such a case, worth a try clearing it.
 Assuming `adb` is installed:
 ```
 $ adb -d install -r dist/Electrum-*-arm64-v8a-debug.apk
-$ adb shell monkey -p org.electrum.electrum 1
+$ adb shell monkey -p com.ecash.electrum 1
 ```
 Note `adb install` can take a `--user {userId}` option to install the app for a specific profile.
 Without that, the default is to install to *all* profiles.
@@ -99,7 +99,7 @@ adb logcat | grep python
 ```
 Better `grep` but fragile because of `cut`:
 ```
-adb logcat | grep -F "`adb shell ps | grep org.electrum.electrum | cut -c14-19`"
+adb logcat | grep -F "`adb shell ps | grep com.ecash.electrum | cut -c14-19`"
 ```
 
 
@@ -142,9 +142,9 @@ of Android does not let you access the internal storage of an app without root.
 To pull a file:
 ```
 $ adb shell
-adb$ run-as org.electrum.electrum ls /data/data/org.electrum.electrum/files/data
+adb$ run-as com.ecash.electrum ls /data/data/com.ecash.electrum/files/data
 adb$ exit
-$ adb exec-out run-as org.electrum.electrum cat /data/data/org.electrum.electrum/files/data/wallets/my_wallet > my_wallet
+$ adb exec-out run-as com.ecash.electrum cat /data/data/com.ecash.electrum/files/data/wallets/my_wallet > my_wallet
 ```
 To push a file:
 ```
@@ -169,8 +169,8 @@ Run `$ adb shell pm list users` to get a list of all existing users, and take no
 
 Instead of `/data/data/{app.path}`, private app data is stored at `/data/user/{userId}/{app.path}`.
 
-Further, instead of `adb$ run-as org.electrum.electrum`,
-you need `adb$ run-as org.electrum.electrum --user {userId}`.
+Further, instead of `adb$ run-as com.ecash.electrum`,
+you need `adb$ run-as com.ecash.electrum --user {userId}`.
 
 ### How to investigate diff between binaries if reproducibility fails?
 ```
