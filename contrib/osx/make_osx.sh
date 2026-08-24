@@ -66,7 +66,13 @@ export CFLAGS="-g0"
 
 # Do not build universal binaries. The default on macos 11+ and xcode 12+ is "-arch arm64 -arch x86_64"
 # but with that e.g. "hid.cpython-310-darwin.so" is not reproducible as built by clang.
-export ARCHFLAGS="-arch x86_64"
+# ECX: was hardcoded "-arch x86_64". On an arm64 host that silently builds every
+# C extension for the wrong architecture -- Cython then fails to import with
+# "incompatible architecture (have 'x86_64', need 'arm64')", which in turn makes
+# other packages' build backends fail in confusing ways. Deriving from the host
+# keeps upstream's Intel VM producing x86_64 exactly as before, and still builds
+# a single-architecture (non-universal) binary either way.
+export ARCHFLAGS="-arch $(uname -m)"
 
 info "Installing build dependencies"
 # note: re pip installing from PyPI,
@@ -179,12 +185,7 @@ export PROPCACHE_NO_EXTENSIONS=1
 export ELECTRUM_ECC_DONT_COMPILE=1
 
 info "Installing requirements..."
-# ECX: frozenlist is allowed as a binary wheel, joining PyQt6 and cryptography
-# in the "harder to build from source" exemption noted above. Its PEP517 backend
-# raises `NameError: name '_cythonize_cli_cmd' is not defined` when built from
-# sdist under --no-build-isolation, even with Cython installed. Only observed on
-# macOS; the Linux and Wine builds compile it from source fine.
-python3 -m pip install --no-build-isolation --no-dependencies --no-binary :all: --only-binary frozenlist \
+python3 -m pip install --no-build-isolation --no-dependencies --no-binary :all: \
     --cache-dir "$PIP_CACHE_DIR" --no-warn-script-location \
     -Ir ./contrib/deterministic-build/requirements.txt \
     || fail "Could not install requirements"
