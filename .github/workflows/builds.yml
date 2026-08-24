@@ -197,6 +197,14 @@ jobs:
           path: contrib/osx/.cache
           key: osx-${{ hashFiles('contrib/osx/make_osx.sh', 'contrib/deterministic-build/*.txt') }}
 
+      # make_osx.sh installs python.org's 3.12.10 pkg and then asserts that
+      # `python3` IS that version. On a hosted runner the preinstalled python3
+      # (3.14.x) shadows it and the assert fails. Upstream's pinned VM has no
+      # competing interpreter, hence no such step there. Prepending the framework
+      # bindir is enough; it need not exist yet, PATH entries may be missing dirs.
+      - name: Prefer the python.org framework python
+        run: echo "/Library/Frameworks/Python.framework/Versions/3.12/bin" >> "$GITHUB_PATH"
+
       - name: Build .app and unsigned .dmg
         run: ./contrib/osx/make_osx.sh
 
