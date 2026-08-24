@@ -284,7 +284,7 @@ class ReceiveTab(QWidget, MessageBoxMixin, Logger):
 
     def get_tab_data(self):
         if self.URI:
-            out = self.URI, self.URI, self.URI_help, _('Bitcoin URI')
+            out = self.URI, self.URI, self.URI_help, _('eCash URI')
         elif self.addr:
             out = self.addr, self.addr, self.address_help, _('Address')
         else:

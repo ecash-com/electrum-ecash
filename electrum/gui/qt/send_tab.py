@@ -73,7 +73,7 @@ class SendTab(QWidget, MessageBoxMixin, Logger):
         msg = (_("Recipient of the funds.")
                + "\n\n"
                + _("This field can contain:") + "\n"
-               + _("- a Bitcoin address or BIP21 URI") + "\n"
+               + _("- an eCash address or BIP21 URI") + "\n"
                + _("- a Lightning invoice") + "\n"
                + _("- a label from your list of contacts") + "\n"
                + _("- an openalias") + "\n"
@@ -624,7 +624,7 @@ class SendTab(QWidget, MessageBoxMixin, Logger):
 
         for o in outputs:
             if o.scriptpubkey is None:
-                self.show_error(_('Bitcoin Address is None'))
+                self.show_error(_('eCash Address is None'))
                 return True
             if o.value is None:
                 self.show_error(_('Invalid Amount'))
