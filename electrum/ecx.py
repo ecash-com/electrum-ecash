@@ -75,11 +75,11 @@ SEQUENCE_FINAL = 0xffffffff
 # with an ECX payment -- funds lost, payee sees nothing.
 URI_SCHEME = 'ecx'
 
-# User-visible application name. Upstream asks forks not to ship under the
-# "Electrum" name (Electron Cash renamed for this reason). The Python package
-# stays `electrum` internally -- renaming it would touch 1352 import lines for
-# no user benefit.
-APP_NAME = "Electrum-eCash"
+# User-visible application name. Decided: "Electrum eCash" -- qualified rather
+# than plain "Electrum", so it never reads as upstream's client.
+# The Python package stays `electrum` internally: renaming it would touch 1352
+# import lines for no user benefit.
+APP_NAME = "Electrum eCash"
 
 # Read by base_crash_reporter.py to detect a forked codebase and refuse to send
 # crash reports to upstream's crashhub. Upstream provides this hook for forks.
@@ -113,7 +113,7 @@ UPDATE_SIGNING_KEYS = ()
 # ~/.electrum/ -- the same wallets and blockchain_headers as the user's real
 # Bitcoin Electrum, corrupting both.
 DATADIR_POSIX = ".electrum-ecash"
-DATADIR_WINDOWS = "Electrum-eCash"
+DATADIR_WINDOWS = "Electrum eCash"
 
 
 # -- Denomination ------------------------------------------------------------
