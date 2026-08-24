@@ -13,6 +13,7 @@ from electrum import version
 from electrum import constants
 from electrum.bitcoin import verify_usermessage_with_address
 from electrum.i18n import _
+from electrum import ecx  # ECX: chain parameters
 from electrum.util import make_aiohttp_session
 from electrum.logging import Logger
 from electrum.network import Network
@@ -20,17 +21,16 @@ from electrum._vendor.distutils.version import StrictVersion
 
 
 class UpdateCheck(QDialog, Logger):
-    url = "https://electrum.org/version"
-    download_url = "https://electrum.org/#download"
+    # ECX: never upstream's feed/keys. None until we host our own; the GUI
+    # never constructs this dialog while ecx.UPDATE_CHECK_URL is None.
+    url = ecx.UPDATE_CHECK_URL
+    download_url = ecx.UPDATE_DOWNLOAD_URL
 
-    VERSION_ANNOUNCEMENT_SIGNING_KEYS = (
-        "13xjmVAB1EATPP8RshTE8S8sNwwSUM9p1P",  # ThomasV (since 3.3.4)
-        "1Nxgk6NTooV4qZsX5fdqQwrLjYcsQZAfTg",  # ghost43 (since 4.1.2)
-    )
+    VERSION_ANNOUNCEMENT_SIGNING_KEYS = ecx.UPDATE_SIGNING_KEYS
 
     def __init__(self, *, latest_version=None):
         QDialog.__init__(self)
-        self.setWindowTitle('Electrum - ' + _('Update Check'))
+        self.setWindowTitle(ecx.APP_NAME + ' - ' + _('Update Check'))  # ECX
         self.content = QVBoxLayout()
         self.content.setContentsMargins(*[10]*4)
 
