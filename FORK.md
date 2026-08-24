@@ -30,6 +30,53 @@ That is deliberate. This is a wallet for claiming a forkcoin, a category with a
 long history of malware, so "here is signed upstream Electrum, and here are our
 ten commits" needs to be checkable in a few minutes.
 
+## Running from source
+
+Verified on macOS with Python 3.14 (Homebrew).
+
+```sh
+python3 -m venv .venv
+.venv/bin/pip install --upgrade pip setuptools wheel
+.venv/bin/pip install -r contrib/requirements/requirements.txt
+
+# NOT in requirements.txt: that file is pure-python only, but electrum/crypto.py
+# hard-requires one of pycryptodomex/cryptography, and dnspython needs the
+# DNSSEC extra. Without these you get "Some dependencies are missing".
+.venv/bin/pip install cryptography "dnspython[DNSSEC]"
+
+.venv/bin/pip install PyQt6            # GUI only
+.venv/bin/pip install -r contrib/requirements/requirements-hw.txt   # hardware wallets only
+```
+
+Then:
+
+```sh
+.venv/bin/python ./run_electrum                 # GUI
+.venv/bin/python ./run_electrum daemon -d       # background daemon
+.venv/bin/python ./run_electrum getinfo         # sync status
+.venv/bin/python ./run_electrum stop
+.venv/bin/python ./run_electrum --offline version
+```
+
+`.venv/` is already covered by upstream's `.gitignore`.
+
+Data lives in `~/.electrum-ecash`, never `~/.electrum`. To throw away all local
+state (wallets included) and resync: `rm -rf ~/.electrum-ecash`.
+
+> **Careful with the test suite.** Some upstream tests instantiate a config
+> against the real data directory and persist settings into it — e.g.
+> `tests/test_onion_message.py` leaves `lightning_forward_payments: true` in
+> `~/.electrum-ecash/config`, which then logs a scary mainnet warning at every
+> startup. Harmless, but delete the key if you see it. (On stock Electrum this
+> lands in the user's real `~/.electrum`; our separate datadir contains it.)
+
+### Verified against the live chain
+
+Synced against `ssl://fulcrum.alpha.ecash.ninja:50002` after alphanet crossed
+the fork: 991,911 headers (~79 MB) PoW-verified to tip 991,910, i.e. **28,262
+blocks past the fork at 963,648**. That exercises the difficulty-reset patch on
+real post-fork headers, which is the only way to prove it.
+
 ## The changes, and why
 
 ECX is byte-identical to Bitcoin for keys and addresses: same genesis, same
