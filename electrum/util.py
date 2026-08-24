@@ -876,11 +876,12 @@ def format_satoshis(
 
 FEERATE_PRECISION = 1  # num fractional decimal places for sat/byte fee rates
 _feerate_quanta = Decimal(10) ** (-FEERATE_PRECISION)
-UI_UNIT_NAME_FEERATE_SAT_PER_VBYTE = "sat/vbyte"
-UI_UNIT_NAME_FEERATE_SAT_PER_VB = "sat/vB"
+# ECX: the smallest unit is the szat, so fee rates read szat/vB
+UI_UNIT_NAME_FEERATE_SAT_PER_VBYTE = f"{ecx.SMALLEST_UNIT}/vbyte"
+UI_UNIT_NAME_FEERATE_SAT_PER_VB = f"{ecx.SMALLEST_UNIT}/vB"
 UI_UNIT_NAME_TXSIZE_VBYTES = "vbytes"
 UI_UNIT_NAME_MEMPOOL_MB = "vMB"
-UI_UNIT_NAME_FIXED_SAT = "sat"
+UI_UNIT_NAME_FIXED_SAT = ecx.SMALLEST_UNIT
 
 
 def format_fee_satoshis(fee, *, num_zeros=0, precision=None):

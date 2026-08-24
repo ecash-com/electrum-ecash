@@ -15,7 +15,7 @@ Pane {
 
     padding: 0
 
-    property var _baseunits: ['BTC','mBTC','bits','sat']
+    property var _baseunits: ['ECX','mECX','bits','szat'] // ECX: keep in sync with electrum/ecx.py BASE_UNITS_LIST
 
     ColumnLayout {
         anchors.fill: parent
