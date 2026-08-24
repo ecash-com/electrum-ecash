@@ -179,10 +179,11 @@ jobs:
     # cannot reproduce those hashes, so this job is for testing and unsigned dev
     # builds only -- a reproducible release still needs the pinned VM.
     #
-    # macos-13 is the Intel image, matching target_arch='x86_64' in
-    # contrib/osx/pyinstaller.spec. On an arm64 image (macos-14+) pyinstaller
-    # would be cross-building and is likely to fail.
-    runs-on: macos-13
+    # Every Intel macOS runner is gone: macos-13 was retired 2025-12-04, and
+    # GitHub drops x86_64 entirely after Fall 2027. So this builds ARM64 ONLY --
+    # it will not run on an Intel Mac. contrib/osx/pyinstaller.spec derives
+    # target_arch from the host, so upstream's pinned Intel VM is unaffected.
+    runs-on: macos-15
     timeout-minutes: 90
     steps:
       - name: Checkout
@@ -205,7 +206,7 @@ jobs:
       - name: Upload macOS artifacts
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
         with:
-          name: electrum-ecash-macos-${{ github.sha }}
+          name: electrum-ecash-macos-arm64-${{ github.sha }}
           path: dist/*.dmg
           retention-days: ${{ env.ARTIFACT_RETENTION }}
           if-no-files-found: error
