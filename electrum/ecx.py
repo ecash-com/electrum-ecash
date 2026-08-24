@@ -75,10 +75,38 @@ SEQUENCE_FINAL = 0xffffffff
 # with an ECX payment -- funds lost, payee sees nothing.
 URI_SCHEME = 'ecx'
 
+# User-visible application name. Upstream asks forks not to ship under the
+# "Electrum" name (Electron Cash renamed for this reason). The Python package
+# stays `electrum` internally -- renaming it would touch 1352 import lines for
+# no user benefit.
+APP_NAME = "Electrum-eCash"
+
 # Read by base_crash_reporter.py to detect a forked codebase and refuse to send
 # crash reports to upstream's crashhub. Upstream provides this hook for forks.
 GIT_REPO_URL = "https://github.com/ecash-com/electrum-ecash"
 GIT_REPO_ISSUES_URL = "https://github.com/ecash-com/electrum-ecash/issues"
+RELEASE_NOTES_URL = ("https://raw.githubusercontent.com/ecash-com/electrum-ecash"
+                     "/refs/heads/master/RELEASE-NOTES")
+
+# Help-menu destinations. Upstream's point at electrum.org / docs.electrum.org,
+# which are Bitcoin Electrum's -- including its download page.
+WEBSITE_URL = "https://ecash.com"
+DOCS_URL = "https://github.com/ecash-com/electrum-ecash"
+
+# Update checks: DISABLED until we host a signed version feed of our own.
+#
+# Upstream's checker fetches https://electrum.org/version, verifies the reply
+# against the Electrum maintainers' signing keys, and links to
+# https://electrum.org/#download. Left enabled, this wallet would offer its
+# users a *Bitcoin Electrum* download as an "update" -- and because ECX and BTC
+# addresses are identical, someone who took it could open their wallet file in
+# Bitcoin Electrum and spend real BTC believing it was ECX.
+#
+# To enable later: host a `version` file, sign it with keys we control, and set
+# all three of these. The GUI stays silent while UPDATE_CHECK_URL is None.
+UPDATE_CHECK_URL = None
+UPDATE_DOWNLOAD_URL = None
+UPDATE_SIGNING_KEYS = ()
 
 # Data directory. Under our "mainnet IS ECX" model, BitcoinMainnet.datadir_subdir()
 # returns None (top level), so without this an ECX build would read and write
@@ -86,6 +114,16 @@ GIT_REPO_ISSUES_URL = "https://github.com/ecash-com/electrum-ecash/issues"
 # Bitcoin Electrum, corrupting both.
 DATADIR_POSIX = ".electrum-ecash"
 DATADIR_WINDOWS = "Electrum-eCash"
+
+
+# -- Denomination ------------------------------------------------------------
+
+# ECX inherits Bitcoin's divisibility exactly: 8 decimals, 1e8 base units.
+# Only the names change. Showing "mBTC" for an ECX balance is the same class of
+# error as linking a Bitcoin block explorer -- it names the wrong chain.
+TICKER = 'ECX'
+BASE_UNITS = {TICKER: 8, 'm' + TICKER: 5, 'bits': 2, 'sat': 0}
+BASE_UNITS_LIST = [TICKER, 'm' + TICKER, 'bits', 'sat']
 
 
 # -- Servers & explorers -----------------------------------------------------
