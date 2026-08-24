@@ -860,8 +860,12 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger, QtEventListener):
             self.help_menu.addAction(_("&Bitcoin Paper"), self.show_bitcoin_paper)
         self.help_menu.addAction(_("&Report Bug"), self.show_report_bug)
         self.help_menu.addSeparator()
-        if self.network:
-            self.help_menu.addAction(_("&Donate to server"), self.donate_to_server)
+        # ECX: "Donate to server" removed. The address comes from the server via
+        # server.donation_address, and Fulcrum ships a default -- ours currently
+        # returns 1Ca1inCimwRhhcpFX84TPRrPQSryTgKW6N, the Fulcrum author's. Because
+        # ECX and BTC addresses are identical it looks valid, so a user donating
+        # would send ECX to someone who never asked for it and may never claim it.
+        # Restore only once the address is one the project controls.
 
         run_hook('init_menubar', self)
         self.setMenuBar(menubar)
