@@ -31,6 +31,7 @@ from PyQt6.QtWidgets import (QWidget, QLabel, QPushButton, QTextEdit,
                              QMessageBox, QHBoxLayout, QVBoxLayout, QDialog, QScrollArea)
 
 from electrum.i18n import _
+from electrum import ecx  # ECX: chain parameters
 from electrum.base_crash_reporter import BaseCrashReporter, EarlyExceptionsQueue, CrashReportResponse
 from electrum.logging import Logger
 from electrum import constants
@@ -52,7 +53,7 @@ class Exception_Window(BaseCrashReporter, QWidget, MessageBoxMixin, Logger):
         self.config = config
 
         QWidget.__init__(self)
-        self.setWindowTitle('Electrum - ' + _('An Error Occurred'))
+        self.setWindowTitle(ecx.APP_NAME + ' - ' + _('An Error Occurred'))  # ECX
         self.setMinimumSize(600, 300)
 
         Logger.__init__(self)

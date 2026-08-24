@@ -1625,7 +1625,8 @@ class Interface(Logger):
             return ''
         if not isinstance(res, str):
             raise RequestCorrupted(f'{res!r} should be a str')
-        address = res.removeprefix('bitcoin:')
+        # ECX: an ECX server may prefix with our scheme; tolerate both
+        address = res.removeprefix(ecx.URI_SCHEME + ':').removeprefix('bitcoin:')
         if not bitcoin.is_address(address):
             # note: do not hard-fail -- allow server to use future-type
             #       bitcoin address we do not recognize
