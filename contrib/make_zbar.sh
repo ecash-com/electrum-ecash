@@ -45,6 +45,13 @@ info "Building $pkgname..."
     if ! [ -x configure ] ; then
         autoreconf -vfi || fail "Could not run autoreconf for $pkgname. Please make sure you have automake and libtool installed, and try again."
     fi
+    if [ $(uname) == "Darwin" ] ; then
+        # ECX: on arm64 macOS, iconv_open/iconv_close do not resolve implicitly
+        # from libSystem the way they do on x86_64, so zbar's qrdectxt.o fails to
+        # link with "symbol(s) not found for architecture arm64". Link it
+        # explicitly. Harmless on x86_64, where libiconv is present too.
+        export LDFLAGS="${LDFLAGS:-} -liconv"
+    fi
     if ! [ -r config.status ] ; then
         if [ "$BUILD_TYPE" = "wine" ] ; then
             # windows target
