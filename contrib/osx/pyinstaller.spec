@@ -9,7 +9,7 @@ if TYPE_CHECKING:
     from PyInstaller.building.build_main import Analysis, PYZ, EXE, BUNDLE
 
 
-PACKAGE_NAME='Electrum.app'
+PACKAGE_NAME='Electrum eCash.app'  # ECX (keep in sync with make_osx.sh PACKAGE)
 PYPKG='electrum'
 MAIN_SCRIPT='run_electrum'
 PROJECT_ROOT = os.path.abspath(".")
@@ -129,7 +129,7 @@ app = BUNDLE(
     version=VERSION,
     name=PACKAGE_NAME,
     icon=ICONS_FILE,
-    bundle_identifier=None,
+    bundle_identifier='com.ecash.electrum',  # ECX: matches Android + AppStream
     info_plist={
         'NSHighResolutionCapable': 'True',
         'NSSupportsAutomaticGraphicsSwitching': 'True',
@@ -139,6 +139,6 @@ app = BUNDLE(
                 'CFBundleURLSchemes': ['ecx', ],
             }],
         'LSMinimumSystemVersion': '11',
-        'NSCameraUsageDescription': 'Electrum would like to access the camera to scan for QR codes',
+        'NSCameraUsageDescription': 'Electrum eCash would like to access the camera to scan for QR codes',
     },
 )

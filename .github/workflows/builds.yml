@@ -12,7 +12,7 @@ on:
         required: true
         default: 'all'
         type: choice
-        options: [all, windows, android, appimage, tarball]
+        options: [all, windows, macos, android, appimage, tarball]
       android_arch:
         description: 'Android architecture (when running android)'
         required: false
@@ -162,6 +162,46 @@ jobs:
         with:
           name: electrum-ecash-appimage-${{ github.sha }}
           path: dist/*.AppImage
+          retention-days: ${{ env.ARTIFACT_RETENTION }}
+          if-no-files-found: error
+          compression-level: 0
+
+  macos:
+    name: "build: macOS (unsigned)"
+    if: ${{ github.event_name != 'workflow_dispatch' || inputs.target == 'all' || inputs.target == 'macos' }}
+    # ECX: upstream builds releases on a pinned macOS 11.7.10 VM with Xcode CLI
+    # 13.2, because that is what makes the binary REPRODUCIBLE. A hosted runner
+    # cannot reproduce those hashes, so this job is for testing and unsigned dev
+    # builds only -- a reproducible release still needs the pinned VM.
+    #
+    # macos-13 is the Intel image, matching target_arch='x86_64' in
+    # contrib/osx/pyinstaller.spec. On an arm64 image (macos-14+) pyinstaller
+    # would be cross-building and is likely to fail.
+    runs-on: macos-13
+    timeout-minutes: 90
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+        with:
+          fetch-depth: 0    # make_osx.sh uses `git describe`
+
+      - name: Cache macOS build deps
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae  # v5.0.5
+        with:
+          path: contrib/osx/.cache
+          key: osx-${{ hashFiles('contrib/osx/make_osx.sh', 'contrib/deterministic-build/*.txt') }}
+
+      - name: Build .app and unsigned .dmg
+        run: ./contrib/osx/make_osx.sh
+
+      - name: List output
+        run: ls -lah dist/
+
+      - name: Upload macOS artifacts
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+        with:
+          name: electrum-ecash-macos-${{ github.sha }}
+          path: dist/*.dmg
           retention-days: ${{ env.ARTIFACT_RETENTION }}
           if-no-files-found: error
           compression-level: 0
