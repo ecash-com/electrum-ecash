@@ -179,7 +179,12 @@ export PROPCACHE_NO_EXTENSIONS=1
 export ELECTRUM_ECC_DONT_COMPILE=1
 
 info "Installing requirements..."
-python3 -m pip install --no-build-isolation --no-dependencies --no-binary :all: \
+# ECX: frozenlist is allowed as a binary wheel, joining PyQt6 and cryptography
+# in the "harder to build from source" exemption noted above. Its PEP517 backend
+# raises `NameError: name '_cythonize_cli_cmd' is not defined` when built from
+# sdist under --no-build-isolation, even with Cython installed. Only observed on
+# macOS; the Linux and Wine builds compile it from source fine.
+python3 -m pip install --no-build-isolation --no-dependencies --no-binary :all: --only-binary frozenlist \
     --cache-dir "$PIP_CACHE_DIR" --no-warn-script-location \
     -Ir ./contrib/deterministic-build/requirements.txt \
     || fail "Could not install requirements"
