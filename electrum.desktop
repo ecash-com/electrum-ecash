@@ -4,7 +4,7 @@
 
 [Desktop Entry]
 Comment=Lightweight eCash (ECX) Client
-Exec=electrum %u
+Exec=electrum-ecash %u
 GenericName[en_US]=eCash Wallet
 GenericName=eCash Wallet
 Icon=electrum
@@ -12,7 +12,7 @@ Name[en_US]=Electrum eCash
 Name=Electrum eCash
 Categories=Finance;Network;
 StartupNotify=true
-StartupWMClass=electrum
+StartupWMClass=electrum-ecash
 Terminal=false
 Type=Application
 MimeType=x-scheme-handler/ecx;
@@ -20,5 +20,5 @@ Actions=Testnet;
 Keywords=crypto;currency;ECX;eCash;
 
 [Desktop Action Testnet]
-Exec=electrum --testnet %u
+Exec=electrum-ecash --testnet %u
 Name=Testnet mode
