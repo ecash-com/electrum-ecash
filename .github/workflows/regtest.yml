@@ -1,15 +1,22 @@
 name: regtest
 
+# ECX: manual-only, and currently expected to FAIL.
+#
+# Two reasons, both real:
+#  1. It installs spesmilo's electrumx and drives a *Bitcoin* regtest node. Our
+#     regtest still points at Bitcoin's, but the replay-protection patch is
+#     unconditional, so the wallet emits nLockTime=499999999 transactions that a
+#     Bitcoin node rejects as non-final.
+#  2. ECX has its own regtest (port 48533). Repointing constants.BitcoinRegtest
+#     at it, and running an ECX-aware indexer, is what would make this meaningful.
+#
+# Left in the tree rather than deleted so it keeps merging cleanly from upstream.
 on:
-  push:
-    branches: [master]
-    tags: ['*']
-  pull_request:
   workflow_dispatch:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: ${{ github.ref != 'refs/heads/master' }}
+  cancel-in-progress: true
 
 permissions:
   contents: read

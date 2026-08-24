@@ -1,9 +1,11 @@
 #!/usr/bin/env bash
 # Run upstream's test suite, minus the tests our intentional changes invalidate.
 #
-#   run-tests.sh            green if nothing beyond the known list is broken
-#   run-tests.sh --audit    ALSO run the known-failing tests, to see if any now
-#                           pass (i.e. the list is stale). Do this after a rebase.
+#   run-tests.sh                   green if nothing beyond the known list is broken
+#   run-tests.sh --audit           ALSO run the known-failing tests, to see if any
+#                                  now pass (list is stale). Do this after a rebase.
+#   run-tests.sh --print-deselect  print the --deselect flags only, so CI can wrap
+#                                  pytest in coverage and still use one source of truth
 set -u
 cd "$(dirname "$0")/../.."
 LIST=contrib/ecx/known-test-failures.txt
@@ -20,6 +22,11 @@ trap 'rm -rf "$ELECTRUMDIR"' EXIT
 # bash 3.2 (macOS) has no mapfile
 KNOWN=()
 while IFS= read -r line; do KNOWN+=("$line"); done < <(grep -vE '^[[:space:]]*(#|$)' "$LIST")
+
+if [[ "${1:-}" == "--print-deselect" ]]; then
+    for t in "${KNOWN[@]}"; do printf -- '--deselect\n%s\n' "$t"; done
+    exit 0
+fi
 
 if [[ "${1:-}" == "--audit" ]]; then
     echo "== auditing ${#KNOWN[@]} known-failing tests: any that PASS should be removed from"

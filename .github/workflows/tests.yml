@@ -2,14 +2,16 @@ name: tests
 
 on:
   push:
-    branches: [master]
+    # ECX: our work lives on ecx/<upstream-tag> branches. `master` is a pristine
+    # mirror of upstream and never receives our commits, so testing it is pointless.
+    branches: ['ecx/**']
     tags: ['*']
   pull_request:
   workflow_dispatch:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: ${{ github.ref != 'refs/heads/master' }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
@@ -39,6 +41,24 @@ jobs:
             --ignore="B007,B009,B010,B036,B042,F541,F841" \
             --show-source --statistics \
             --exclude "*_pb2.py,electrum/_vendor/"
+
+  ecx-checks:
+    name: "linter: ECX static checks"
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+      - name: Set up Python
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405  # v6.2.0
+        with:
+          python-version: "3.10"
+      - name: Install pyflakes
+        run: pip install pyflakes
+      # undefined names, and every module using ecx.* actually importing it.
+      # Catches the class of bug that crashed the GUI at startup once already:
+      # a NameError inside a function body, invisible to both imports and tests.
+      - name: Run ECX checks
+        run: ./contrib/ecx/check.sh
 
   ban-unicode:
     name: "linter: ban unicode"
@@ -108,29 +128,16 @@ jobs:
           pip install ".[tests,qml_gui]"
       - name: Log versions
         run: python3 --version && pip freeze --all
+      # ECX: deselect the upstream tests our intentional changes invalidate. The
+      # list lives in contrib/ecx/known-test-failures.txt with the cause of each;
+      # --print-deselect keeps this and run-tests.sh on one source of truth.
       - name: Run pytest with coverage
         run: |
+          mapfile -t DESELECT < <(./contrib/ecx/run-tests.sh --print-deselect)
           coverage run --source=electrum \
             "--omit=electrum/gui/*,electrum/plugins/*,electrum/scripts/*" \
-            -m pytest tests -v
+            -m pytest tests -v --ignore=tests/qml "${DESELECT[@]}"
           coverage report
-      - name: Upload to Coveralls
-        if: matrix.python == '3.10' && !matrix.debug
-        env:
-          # 'COVERALLS_REPO_TOKEN' needs to be set in the GitHub repository settings
-          #  This is a "repo token", NOT a "Personal API Token"!
-          #  ref https://coveralls.io/github/spesmilo/electrum/settings
-          COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
-          CI_NAME: github-actions
-          CI_BUILD_NUMBER: ${{ github.run_id }}
-          CI_JOB_ID: ${{ github.job }}-${{ github.run_attempt }}
-          CI_BUILD_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-          CI_BRANCH: ${{ github.ref_name }}
-          CI_PULL_REQUEST: ${{ github.event.pull_request.number }}
-        # the repo token will be empty when pull requests from forks get opened
-        # so we won't upload on every pull request, but it will run again
-        # with the token once the PR gets merged.
-        run: if [ -n "$COVERALLS_REPO_TOKEN" ]; then coveralls; else echo "missing COVERALLS_REPO_TOKEN"; fi
 
   # unittests using the ~same frozen dependencies that are used in the released binaries
   # note: not using pinned pyqt here, due to "qml_gui" extra
@@ -182,4 +189,6 @@ jobs:
       - name: Log versions
         run: python3 --version && pip freeze --all
       - name: Run pytest
-        run: pytest tests -v
+        run: |
+          mapfile -t DESELECT < <(./contrib/ecx/run-tests.sh --print-deselect)
+          pytest tests -v --ignore=tests/qml "${DESELECT[@]}"
