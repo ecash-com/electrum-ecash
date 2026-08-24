@@ -102,13 +102,15 @@ MSG_LN_UTXO_RESERVE = (
 
 # not to be translated
 MSG_TERMS_OF_USE = (
-"""1. Electrum is distributed under the MIT licence by Electrum Technologies GmbH. Most notably, this means that the Electrum software is provided as is, and that it comes without warranty.
+"""1. Electrum eCash is a fork of Electrum, distributed under the MIT licence. It is not affiliated with, endorsed by, or supported by the Electrum developers or Electrum Technologies GmbH. The software is provided as is, and comes without warranty.
 
-2. We are neither a bank nor a financial service provider. In addition, we do not store user account data, and we are not an intermediary in the interaction between our software and the Bitcoin blockchain. Therefore, we do not have the possibility to freeze funds or to undo a fraudulent transaction.
+2. We are neither a bank nor a financial service provider. In addition, we do not store user account data, and we are not an intermediary in the interaction between our software and the eCash blockchain. Therefore, we do not have the possibility to freeze funds or to undo a fraudulent transaction.
 
-3. We do not provide private user support. All issue resolutions are public, and take place on Github or public forums. If someone posing as 'Electrum support' proposes to help you via a private channel, this person is most likely an imposter trying to steal your bitcoins."""
+3. eCash addresses are identical to Bitcoin addresses, and coins that existed before the fork exist on both chains. A transaction can move your Bitcoin as well as your eCash unless it is replay-protected. This wallet applies that protection to every transaction it broadcasts.
+
+4. We do not provide private user support. All issue resolutions are public, and take place on Github or public forums. If someone posing as 'Electrum eCash support' proposes to help you via a private channel, this person is most likely an imposter trying to steal your coins."""
 )
-TERMS_OF_USE_LATEST_VERSION : int = 1  # bump this if we want users re-prompted due to changes
+TERMS_OF_USE_LATEST_VERSION : int = 2  # ECX: rewrote the text, so re-prompt  # bump this if we want users re-prompted due to changes
 
 
 MSG_CONNECTMODE_AUTOCONNECT = _('Auto-connect')
