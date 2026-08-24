@@ -61,7 +61,7 @@ def create_fallback_node_list(fallback_nodes_dict: dict[str, dict]) -> List[LNPe
 # to send reports to upstream's crashhub. Upstream provides the hook for forks.
 GIT_REPO_URL = ecx.GIT_REPO_URL
 GIT_REPO_ISSUES_URL = ecx.GIT_REPO_ISSUES_URL
-RELEASE_NOTES_URL = "https://raw.githubusercontent.com/spesmilo/electrum/refs/heads/master/RELEASE-NOTES"
+RELEASE_NOTES_URL = ecx.RELEASE_NOTES_URL  # ECX
 BIP39_WALLET_FORMATS = read_json('bip39_wallet_formats.json')
 
 
