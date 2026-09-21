@@ -26,9 +26,18 @@ and only the first two are visible to a wallet:
 
 # `consensus.EcashHeight` in ecash-com/bitcoin, src/kernel/chainparams.cpp.
 # Launch is phased and alpha/beta coins are destroyed and reissued at full
-# launch, so THIS IS THE ONE LINE THAT CHANGES PER PHASE:
+# launch, so this changes per phase:
 #     alpha 963648 (2026-08-23) | beta 967680 (2026-09-20) | full 973728 (2026-10-31)
-ECASH_HEIGHT = 963648
+#
+# CURRENT PHASE: beta. Tracking the `betanet` branch of ecash-com/bitcoin.
+#
+# Each phase is a DIFFERENT chain, forked from Bitcoin at a different height --
+# not a continuation of the previous one. Between alpha's fork and beta's, the
+# alpha chain has its own blocks while the beta chain still has Bitcoin's. So a
+# phase switch is never just this constant: FORK_BITS below and the pinned
+# hashes in chains/mainnet/checkpoints.json must move with it, or the client
+# refuses to sync the new chain. See contrib/ecx/make-checkpoints.py.
+ECASH_HEIGHT = 967680
 
 # Bitcoin's difficulty retarget interval. Same as blockchain.CHUNK_SIZE, but
 # redeclared so this module stays import-free.
@@ -47,6 +56,30 @@ FORK_CHUNK = ECASH_HEIGHT // RETARGET_INTERVAL
 # blockchain.verify_chunk(index) validates against get_target(index - 1), so the
 # override belongs on the chunk *before* the fork chunk.
 FORK_TARGET_OVERRIDE_CHUNK = FORK_CHUNK - 1
+
+# `consensus.EcashForkBits` -- the compact target the fork block must carry.
+#
+# CHANGED IN BETA, and it is not a value you can derive: alphanet reset to
+# powLimit (`bnNew = bnPowLimit`, i.e. 0x1d00ffff == blockchain.MAX_TARGET),
+# betanet resets to a fixed difficulty of 1e9 (`bnNew.SetCompact(EcashForkBits)`
+# in src/pow.cpp). Read it off chainparams.cpp for the phase's branch; do not
+# assume it is still powLimit next time.
+#
+# betanet's validation.cpp enforces this as a consensus rule in its own right
+# ("bad-diffbits-ecash-da"), so the fork block carries exactly these bits.
+#
+# This is the fork's PRIMARY chain-identity guard, and the reason it works is
+# that blockchain.verify_header compares bits for EXACT equality rather than as
+# a proof-of-work threshold. Real Bitcoin's header at height 967680 carries
+# ~0x1702355e, so it fails against our expected 0x19044b7e and a Bitcoin server
+# is rejected. Nothing else can do this job: ECX shares Bitcoin's genesis hash,
+# so Electrum's usual genesis check (interface.py) passes against a BTC server.
+FORK_BITS = 0x19044b7e
+
+# Sanity: a compact target's mantissa must not have its sign bit set, or
+# SetCompact reads it as negative and the round-trip through target_to_bits that
+# verify_header relies on would not be exact.
+assert not (FORK_BITS & 0x00800000), f"FORK_BITS {FORK_BITS:#010x} has the sign bit set"
 
 
 # -- Replay protection -------------------------------------------------------
@@ -88,7 +121,13 @@ APP_NAME = "Electrum eCash"
 #
 # version.ELECTRUM_VERSION itself must stay bare "X.Y.Z" -- plugin.py feeds it to
 # StrictVersion, which rejects any suffix.
-RELEASE = 1
+#
+# BUMP THIS WHENEVER THE CHAIN PARAMETERS ABOVE CHANGE, not only for feature
+# releases. ecx1 was an alphanet build; ecx2 is betanet. Two binaries reporting
+# the same version while syncing different chains is precisely the confusion
+# this fork exists to prevent -- and since ECX addresses are indistinguishable
+# from Bitcoin's, a user cannot tell which chain they are on by looking.
+RELEASE = 2
 
 SUMMARY = "eCash (ECX) Wallet"
 DESCRIPTION = ("A lightweight eCash (ECX) wallet, forked from Electrum. Startup is "
@@ -149,9 +188,19 @@ BASE_UNITS_LIST = [TICKER, 'm' + TICKER, 'bits', SMALLEST_UNIT]
 # -- Servers & explorers -----------------------------------------------------
 
 BLOCK_EXPLORERS = {
-    'explorer.alpha.ecash.ninja': ('https://explorer.alpha.ecash.ninja/',
-                                   {'tx': 'tx/', 'addr': 'address/'}),
+    'explorer.beta.ecash.ninja': ('https://explorer.beta.ecash.ninja/',
+                                  {'tx': 'tx/', 'addr': 'address/'}),
 }
+
+# Which of the above is selected out of the box.
+#
+# Upstream's default is 'Blockstream.info', which is not one of ours, and
+# util.block_explorer() falls back to *the default* when the configured name is
+# missing -- so with upstream's value every fresh install resolves to no
+# explorer at all and "View on block explorer" silently does nothing. Same for
+# anyone whose config still names a previous phase's host. Derived from the dict
+# rather than spelled out, so a rename cannot reintroduce the dangling default.
+BLOCK_EXPLORER_DEFAULT = next(iter(BLOCK_EXPLORERS))
 
 
 class NotReplayProtectedException(Exception):

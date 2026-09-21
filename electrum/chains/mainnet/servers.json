@@ -1,5 +1,5 @@
 {
-    "fulcrum.alpha.ecash.ninja": {
+    "explorer.beta.ecash.ninja": {
         "pruning": "-",
         "s": "50002",
         "version": "1.6"

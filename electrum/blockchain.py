@@ -536,14 +536,16 @@ class Blockchain(Logger):
             return 0
         if index == -1:
             return MAX_TARGET
-        # ECX: the fork block resets difficulty to powLimit
-        # (`bnNew = bnPowLimit` in src/pow.cpp), which GetCompact()s to
-        # 0x1d00ffff == MAX_TARGET. Authoritative, so it is checked before the
-        # checkpoints: it must hold even with a checkpoints.json that predates
-        # the fork (upstream's stops ~10k blocks short of it) or one copied
-        # from Bitcoin.
+        # ECX: the fork block resets difficulty to a fixed target
+        # (`bnNew.SetCompact(params.EcashForkBits)` in src/pow.cpp). Note this
+        # is NOT powLimit -- alphanet reset to powLimit, betanet resets to
+        # difficulty 1e9 -- so it is read from ecx.FORK_BITS, never assumed.
+        # Authoritative, so it is checked before the checkpoints: it must hold
+        # even with a checkpoints.json that predates the fork (upstream's stops
+        # ~10k blocks short of it), one copied from Bitcoin, or one left over
+        # from the previous phase.
         if index == ecx.FORK_TARGET_OVERRIDE_CHUNK:
-            return MAX_TARGET
+            return self.bits_to_target(ecx.FORK_BITS)
         if index < len(self.checkpoints):
             h, t = self.checkpoints[index]
             return t

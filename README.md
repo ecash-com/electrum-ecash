@@ -33,11 +33,37 @@ obviously broken. This wallet talks only to ECX, sets ECX's replay-protection
 marker on every transaction, and refuses to broadcast one that could replay onto
 Bitcoin.
 
+### Which chain this build tracks
+
+ECX launches in phases, and **each phase is a different chain**, forked from
+Bitcoin at a different height. Alpha and beta coins are destroyed and reissued at
+full launch, so a build only ever speaks to one of them.
+
+```
+Phase         beta  (betanet)
+Fork height   967,680          -- Bitcoin-identical up to and including 967,679
+Fork target   0x19044b7e       -- difficulty 1e9, vs Bitcoin's ~127e12
+Server        ssl://explorer.beta.ecash.ninja:50002   (Fulcrum 2.1.2)
+Explorer      https://explorer.beta.ecash.ninja/
+Upstream C++  ecash-com/bitcoin @ betanet
+```
+
+**Alphanet is not supported by this build and its coins no longer matter.** An
+alpha-era data directory will not sync: delete `~/.electrum-ecash/blockchain_headers`
+and `~/.electrum-ecash/forks` before first run, and expect any existing wallet's
+transaction history to be rebuilt against the new chain.
+
+Moving a build between phases is two constants plus a checkpoint rebuild, and it
+has a sharp edge or two -- the procedure is in
+[FORK.md](FORK.md#per-phase-rebuilds).
+
 ## What we changed
 
 The fork is a linear patch series on the GPG-signed upstream `4.8.1` tag.
-**About 220 lines touch pre-existing upstream files**; everything else lives in
-new files, chiefly `electrum/ecx.py`, which holds every ECX parameter.
+Most of it lives in new files, chiefly `electrum/ecx.py`, which holds every ECX
+parameter; `show-fork-diff.sh` prints the current split between new files and
+edits to pre-existing ones. The behavioural changes are a handful of one-liners --
+the bulk of the rest is branding and packaging.
 
 Read the whole thing in one command:
 
@@ -150,9 +176,9 @@ commits if we ever offer them upstream -- they will need them by 2027.
 
 `master` tracks upstream untouched; our work lives on `ecx/<upstream-tag>`
 branches, rebased onto **signed** upstream tags so every release has verifiable
-provenance. ECX also relaunches twice more (beta and full), and each relaunch is
-a different chain -- the procedure for both is in
-[FORK.md](FORK.md#maintaining-the-fork).
+provenance. ECX relaunches once more (full, at height 973,728) and that relaunch
+is a different chain again -- the procedure is in
+[FORK.md](FORK.md#per-phase-rebuilds).
 
 ## Contributing
 

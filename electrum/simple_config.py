@@ -9,6 +9,7 @@ from copy import deepcopy
 
 from . import constants
 from . import util
+from . import ecx  # ECX: chain parameters
 from . import invoices
 from .util import base_units, base_unit_name_to_decimal_point, decimal_point_to_base_unit_name, UnknownBaseUnit, DECIMAL_POINT_DEFAULT
 from .util import format_satoshis, format_fee_satoshis, os_chmod
@@ -893,7 +894,10 @@ Warning: setting this to too low will result in lots of payment failures."""),
     )
 
     BLOCK_EXPLORER = ConfigVar(
-        'block_explorer', default='Blockstream.info', type_=str,
+        # ECX: upstream's default names a Bitcoin explorer that is absent from
+        # ours, and block_explorer() falls back to the default -- so it resolves
+        # to nothing and the explorer links go dead. See ecx.BLOCK_EXPLORERS.
+        'block_explorer', default=ecx.BLOCK_EXPLORER_DEFAULT, type_=str,
         short_desc=lambda: _('Online Block Explorer'),
         long_desc=lambda: _('Choose which online block explorer to use for functions that open a web browser'),
     )
