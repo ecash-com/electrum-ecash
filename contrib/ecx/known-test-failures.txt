@@ -47,8 +47,16 @@ tests/test_submarine_swaps.py::TestSwapClaim::test_reverse_swap_claims_to_extern
 tests/test_txbatcher.py::TestTxBatcher::test_sweep_from_submarine_swap
 
 # asserts exact tx hex/txid; nLockTime is now 499999998  [commit: replay-protection nLockTime]
-# (test_rbf and four TestSwapClaim tests were on this list for 4.8.1; upstream
-# changed them in 4.8.3 and they pass again, so they were removed by --audit.)
+# (Four TestSwapClaim tests were on this list for 4.8.1; upstream changed them in
+# 4.8.3 and they pass again, so --audit removed them.)
+#
+# NOTE test_rbf is deselected whole, which is coarser than we would like: only its
+# _rbf_sufficient_fee_increase_adding_outputs_to_base_tx subtest (with
+# simulate_moving_txs=True) asserts a PSBT hex containing nLockTime, and pytest
+# --deselect cannot target a subtest. CAUTION: `--audit` reports this test as
+# PASSED on some pytest-subtests versions (seen locally with 3.14) while CI's
+# fails it; trust CI here, and do not remove it on the audit's say-so.
+tests/test_wallet_vertical.py::TestWalletSending::test_rbf
 tests/plugins/test_timelock_recovery.py::TestTimelockRecovery::test_make_unsigned_alert_tx
 tests/plugins/test_timelock_recovery.py::TestTimelockRecovery::test_make_unsigned_cancellation_tx
 tests/plugins/test_timelock_recovery.py::TestTimelockRecovery::test_make_unsigned_recovery_tx
