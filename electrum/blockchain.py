@@ -386,7 +386,17 @@ class Blockchain(Logger):
         num = len(data) // HEADER_SIZE
         start_height = index * CHUNK_SIZE
         prev_hash = self.get_hash(start_height - 1)
-        target = self.get_target(index-1)
+        # ECX: before the fork a chunk is a retarget period and has one target.
+        # After it, targets move every 288 headers and depend on the timestamps
+        # of the preceding window, part of which is this very chunk -- not on
+        # disk yet. So post-fork headers are verified one at a time against a
+        # lookup that sees the chunk as it is validated.
+        chunk_target = self.get_target(index-1) if start_height < ecx.ECASH_HEIGHT else None
+        verified = {}  # type: Dict[int, dict]
+
+        def header_at(h: int) -> Optional[dict]:
+            return verified.get(h) or self.read_header(h)
+
         for i in range(num):
             height = start_height + i
             try:
@@ -395,7 +405,12 @@ class Blockchain(Logger):
                 expected_header_hash = None
             raw_header = data[i*HEADER_SIZE : (i+1)*HEADER_SIZE]
             header = deserialize_header(raw_header, index*CHUNK_SIZE + i)
+            if height < ecx.ECASH_HEIGHT:
+                target = chunk_target
+            else:
+                target = self.get_target_for_height(height, header_at)
             self.verify_header(header, prev_hash, target, expected_header_hash)
+            verified[height] = header
             prev_hash = hash_header(header)
 
     @with_lock
@@ -592,18 +607,23 @@ class Blockchain(Logger):
 
     def get_target(self, index: int) -> int:
         # compute target from chunk x, used in chunk x+1
+        #
+        # ECX: Bitcoin's rule, so only meaningful up to the fork. For the chunk
+        # before the fork chunk it returns the fork block's fixed reset target;
+        # beyond that there is no such thing as "the" target of a chunk (see
+        # get_target_for_height), and asking is a bug.
         if constants.net.TESTNET:
             return 0
         if index == -1:
             return MAX_TARGET
+        if index > ecx.FORK_TARGET_OVERRIDE_CHUNK:
+            raise ValueError(f"get_target({index}): chunk {index + 1} is after the ECX fork; "
+                             f"use get_target_for_height")
         # ECX: the fork block resets difficulty to a fixed target
-        # (`bnNew.SetCompact(params.EcashForkBits)` in src/pow.cpp). Note this
-        # is NOT powLimit -- alphanet reset to powLimit, betanet resets to
-        # difficulty 1e9 -- so it is read from ecx.FORK_BITS, never assumed.
-        # Authoritative, so it is checked before the checkpoints: it must hold
-        # even with a checkpoints.json that predates the fork (upstream's stops
-        # ~10k blocks short of it), one copied from Bitcoin, or one left over
-        # from the previous phase.
+        # (`bnNew.SetCompact(params.EcashForkBits)` in src/pow.cpp). Not
+        # derivable -- read from ecx.FORK_BITS. Authoritative, so it is checked
+        # before the checkpoints: it must hold even with a checkpoints.json that
+        # predates the fork, or one copied from Bitcoin.
         if index == ecx.FORK_TARGET_OVERRIDE_CHUNK:
             return self.bits_to_target(ecx.FORK_BITS)
         if index < len(self.checkpoints):
@@ -624,6 +644,44 @@ class Blockchain(Logger):
         # not any target can be represented in 32 bits:
         new_target = self.bits_to_target(self.target_to_bits(new_target))
         return new_target
+
+    def get_target_for_height(self, height: int, header_at=None) -> int:
+        """ECX: the target the header at `height` must carry.
+
+        Before the fork this is Bitcoin's per-chunk target. From the fork block
+        on, ECX retargets every 288 blocks with a dampened adjustment
+        (ecx.post_fork_next_target), so a target is a function of the height
+        and of the headers in the preceding window, not of a 2016-header chunk.
+
+        `header_at(h)` returns the header dict at height h, or None if it is not
+        available. It defaults to read_header; verify_chunk passes a lookup that
+        also sees the not-yet-saved headers of the chunk being verified.
+        Raises MissingHeader if a needed header is unavailable.
+        """
+        if constants.net.TESTNET:
+            return 0
+        if height < ecx.ECASH_HEIGHT:
+            return self.get_target(height // CHUNK_SIZE - 1)
+        if height == ecx.ECASH_HEIGHT:
+            # the reset; validation.cpp enforces these exact bits ("bad-diffbits-ecash-da")
+            return self.bits_to_target(ecx.FORK_BITS)
+        if header_at is None:
+            header_at = self.read_header
+        last = header_at(height - 1)
+        if last is None:
+            raise MissingHeader(height - 1)
+        last_target = self.bits_to_target(last['bits'])
+        if not ecx.is_post_fork_retarget_height(height):
+            # pow.cpp: not on an interval boundary -> `return pindexLast->nBits`
+            return last_target
+        first_height = ecx.post_fork_window_start(height)
+        first = header_at(first_height)
+        if first is None:
+            raise MissingHeader(first_height)
+        new_target = ecx.post_fork_next_target(
+            last_target, first['timestamp'], last['timestamp'], MAX_TARGET)
+        # not any target can be represented in 32 bits (GetCompact rounding):
+        return self.bits_to_target(self.target_to_bits(new_target))
 
     @classmethod
     def bits_to_target(cls, bits: int) -> int:
@@ -663,12 +721,19 @@ class Blockchain(Logger):
             bitsBase >>= 8
         return bitsN << 24 | bitsBase
 
+    @staticmethod
+    def _work_for_target(target: int) -> int:
+        """work done by a single header mined against `target`"""
+        return ((2 ** 256 - target - 1) // (target + 1)) + 1
+
     def chainwork_of_header_at_height(self, height: int) -> int:
         """work done by single header at given height"""
+        # ECX: pre-fork only (Bitcoin's per-chunk target); the post-fork path in
+        # get_chainwork reads bits straight from the verified headers instead.
+        assert height < ecx.ECASH_HEIGHT, height
         chunk_idx = height // CHUNK_SIZE - 1
         target = self.get_target(chunk_idx)
-        work = ((2 ** 256 - target - 1) // (target + 1)) + 1
-        return work
+        return self._work_for_target(target)
 
     @with_lock
     def get_chainwork(self, height=None) -> int:
@@ -678,6 +743,53 @@ class Blockchain(Logger):
             # On testnet/regtest, difficulty works somewhat different.
             # It's out of scope to properly implement that.
             return height
+        if height < ecx.ECASH_HEIGHT:
+            return self._get_chainwork_bitcoin(height)
+        return self._get_chainwork_ecx(height)
+
+    def _get_chainwork_ecx(self, height: int) -> int:
+        """ECX: chainwork at a post-fork height.
+
+        After the fork, bits are constant within each 288-block retarget period
+        and the periods start at the fork (ECASH_HEIGHT % 288 == 0), so work is
+        summed period by period from the stored headers. Post-fork headers are
+        never in the checkpoint region (make-checkpoints.py stops at the fork),
+        so they are always on disk once the chain has reached them.
+        """
+        fork = ecx.ECASH_HEIGHT
+        period = ecx.POST_FORK_RETARGET_INTERVAL
+        assert height >= fork, height
+
+        def work_in_period_starting_at(start: int) -> int:
+            header = self.read_header(start)
+            if header is None:
+                raise MissingHeader(start)
+            return self._work_for_target(self.bits_to_target(header['bits']))
+
+        # last block of the last complete period at or below `height`; fork-1 if none
+        last_period_end = fork - 1 + (height - fork + 1) // period * period
+        cached_height = last_period_end
+        while _CHAINWORK_CACHE.get(self.get_hash(cached_height)) is None:
+            if cached_height <= fork - 1:
+                break
+            cached_height -= period
+        if cached_height <= fork - 1:
+            cached_height = fork - 1
+            running_total = self._get_chainwork_bitcoin(fork - 1)
+            _CHAINWORK_CACHE[self.get_hash(cached_height)] = running_total
+        else:
+            running_total = _CHAINWORK_CACHE[self.get_hash(cached_height)]
+        while cached_height < last_period_end:
+            cached_height += period
+            running_total += period * work_in_period_starting_at(cached_height - period + 1)
+            _CHAINWORK_CACHE[self.get_hash(cached_height)] = running_total
+        if height > last_period_end:
+            running_total += (height - last_period_end) * work_in_period_starting_at(last_period_end + 1)
+        return running_total
+
+    def _get_chainwork_bitcoin(self, height: int) -> int:
+        """chainwork at a pre-fork height: Bitcoin's rule, one target per 2016-block chunk"""
+        assert height < ecx.ECASH_HEIGHT, height
         last_retarget = height // CHUNK_SIZE * CHUNK_SIZE - 1
         cached_height = last_retarget
         while _CHAINWORK_CACHE.get(self.get_hash(cached_height)) is None:
@@ -712,7 +824,7 @@ class Blockchain(Logger):
         if prev_hash != header.get('prev_block_hash'):
             return False
         try:
-            target = self.get_target(height // CHUNK_SIZE - 1)
+            target = self.get_target_for_height(height)  # ECX: per height, not per chunk
         except MissingHeader:
             return False
         try:
@@ -733,8 +845,13 @@ class Blockchain(Logger):
 
     def get_checkpoints(self):
         # for each chunk, store the hash of the last block and the target after the chunk
+        #
+        # ECX: stops at the fork. A checkpoint pairs a chunk's last hash with
+        # the single target of the NEXT chunk, and post-fork chunks have no
+        # single target. The last entry (index FORK_CHUNK - 1) pins the last
+        # shared Bitcoin block together with the fork block's reset target.
         cp = []
-        n = self.height() // CHUNK_SIZE
+        n = min(self.height() // CHUNK_SIZE, ecx.FORK_CHUNK)
         for index in range(n):
             h = self.get_hash((index+1) * CHUNK_SIZE -1)
             target = self.get_target(index)

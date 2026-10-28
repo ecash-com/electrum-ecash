@@ -1,5 +1,5 @@
 {
-    "explorer.beta.ecash.ninja": {
+    "explorer.ecash.ninja": {
         "pruning": "-",
         "s": "50002",
         "version": "1.6"

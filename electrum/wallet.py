@@ -213,8 +213,9 @@ def get_locktime_for_new_transaction(
     include_random_component: bool = True,
 ) -> int:
     # ECX: every transaction carries the replay-protection marker.
-    # nLockTime == 499999999 is "final" to ECX nodes and permanently non-final
-    # to Bitcoin Core, so an ECX transaction can never be replayed onto BTC.
+    # nLockTime == 499999998 (LOCKTIME_THRESHOLD - 2) is "final" to ECX nodes and
+    # permanently non-final to Bitcoin Core, so an ECX transaction can never be
+    # replayed onto BTC.
     # This returns early: upstream's fee-sniping logic below is unreachable
     # here, but is left untouched so upstream changes to it still merge cleanly.
     return ecx.LOCKTIME
