@@ -5,8 +5,8 @@ developers -- they do not maintain this software and cannot fix it.
 
 ## In this fork's own code
 
-Anything in the ECX changes -- the fork's ~30 commits on top of upstream `4.8.1`,
-listed by `git log 4.8.1..ecx/4.8.1` or `grep -rn '# ECX:' electrum/` -- should be
+Anything in the ECX changes -- the fork's ~30 commits on top of upstream `4.8.3`,
+listed by `git log 4.8.3..ecx/4.8.3` or `grep -rn '# ECX:' electrum/` -- should be
 reported privately here:
 
 - (preferred) GitHub's ["Report a

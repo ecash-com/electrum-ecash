@@ -6,7 +6,7 @@ Layer Two Labs Bitcoin hard fork ("eCash").
 ```
 Licence:  MIT
 Language: Python (>= 3.10)
-Upstream: https://github.com/spesmilo/electrum  (v4.8.1)
+Upstream: https://github.com/spesmilo/electrum  (v4.8.3)
 ```
 
 > **Not affiliated with, endorsed by, or supported by the Electrum developers or
@@ -35,31 +35,33 @@ Bitcoin.
 
 ### Which chain this build tracks
 
-ECX launches in phases, and **each phase is a different chain**, forked from
-Bitcoin at a different height. Alpha and beta coins are destroyed and reissued at
-full launch, so a build only ever speaks to one of them.
+**eCash mainnet** -- the real chain. ECX launched in phases; the alpha and beta
+networks are abandoned and their coins void. This build speaks only to mainnet.
 
 ```
-Phase         beta  (betanet)
-Fork height   967,680          -- Bitcoin-identical up to and including 967,679
-Fork target   0x19044b7e       -- difficulty 1e9, vs Bitcoin's ~127e12
-Server        ssl://explorer.beta.ecash.ninja:50002   (Fulcrum 2.1.2)
-Explorer      https://explorer.beta.ecash.ninja/
-Upstream C++  ecash-com/bitcoin @ betanet
+Fork height   973,728          -- Bitcoin-identical up to and including 973,727
+Fork target   0x1901a6e1       -- difficulty ~2.6e9, vs Bitcoin's ~130e12
+Retarget      every 288 blocks after the fork, dampened 6:1 (Bitcoin: 2016)
+nLockTime     499999998        -- replay-protection marker on every transaction
+Server        ssl://explorer.ecash.ninja:50002   (Fulcrum 2.1.4)
+Explorer      https://explorer.ecash.ninja/
+Upstream C++  ecash-com/bitcoin @ master
+Config        https://drivechain.dev/config  (network id "ecash")
 ```
 
-**Alphanet is not supported by this build and its coins no longer matter.** An
-alpha-era data directory will not sync: delete `~/.electrum-ecash/blockchain_headers`
-and `~/.electrum-ecash/forks` before first run, and expect any existing wallet's
-transaction history to be rebuilt against the new chain.
+**Alphanet and betanet are not supported by this build and their coins no longer
+matter.** A data directory from either will not sync past its old fork height:
+delete `~/.electrum-ecash/blockchain_headers` and `~/.electrum-ecash/forks` before
+first run, and expect any existing wallet's transaction history to be rebuilt
+against mainnet. Betanet-era transactions also carry the old locktime marker
+(499999999) and are not valid on mainnet.
 
-Moving a build between phases is two constants plus a checkpoint rebuild, and it
-has a sharp edge or two -- the procedure is in
-[FORK.md](FORK.md#per-phase-rebuilds).
+How the client verifies the post-fork chain, and how the checkpoints are built,
+is in [FORK.md](FORK.md#post-fork-difficulty).
 
 ## What we changed
 
-The fork is a linear patch series on the GPG-signed upstream `4.8.1` tag.
+The fork is a linear patch series on the GPG-signed upstream `4.8.3` tag.
 Most of it lives in new files, chiefly `electrum/ecx.py`, which holds every ECX
 parameter; `show-fork-diff.sh` prints the current split between new files and
 edits to pre-existing ones. The behavioural changes are a handful of one-liners --
@@ -68,7 +70,7 @@ the bulk of the rest is branding and packaging.
 Read the whole thing in one command:
 
 ```sh
-git log 4.8.1..HEAD                     # ~30 self-contained commits
+git log 4.8.3..HEAD                     # ~45 self-contained commits
 contrib/ecx/show-fork-diff.sh           # summary
 contrib/ecx/show-fork-diff.sh --full    # the complete patch
 contrib/ecx/show-fork-diff.sh --markers # every '# ECX:' line in the tree
@@ -89,7 +91,7 @@ Verified on macOS with Python 3.14 and on Linux.
 ```sh
 git clone https://github.com/ecash-com/electrum-ecash.git
 cd electrum-ecash
-git checkout ecx/4.8.1
+git checkout ecx/4.8.3
 git submodule update --init
 
 python3 -m venv .venv
@@ -124,7 +126,7 @@ contrib/ecx/check.sh              # static checks (undefined names, ecx imports)
 
 Exclusions are listed with their cause in
 `contrib/ecx/known-test-failures.txt`, and were established by diffing against a
-pristine `4.8.1` checkout -- not assumed. Upstream's test files are deliberately
+pristine `4.8.3` checkout -- not assumed. Upstream's test files are deliberately
 left unedited so they keep merging cleanly.
 
 ## Building binaries

@@ -21,28 +21,39 @@ tests/test_util.py::TestUtil::test_parse_URI_multiple_args
 tests/test_util.py::TestUtil::test_parse_URI_no_address_request_url
 tests/test_util.py::TestUtil::test_parse_URI_unsupported_req_key
 
+# Channel backups require Lightning, which is disabled: 10 fail in lnpeer with
+# "This wallet cannot create new channels", 4 at the can_have_lightning() assert
+# in Wallet.init_lightning. All 14 pass on a pristine 4.8.3.  [commit: disable Lightning]
+tests/test_lnwallet.py::TestChannelBackup::test_channel_backup_with_same_funding_address_as_channel
+tests/test_lnwallet.py::TestChannelBackup::test_imported_channel_backup_upgrade
+tests/test_lnwallet.py::TestChannelBackup::test_local_fclose_from_anchor_chan_backup_deterministic_lightning
+tests/test_lnwallet.py::TestChannelBackup::test_local_fclose_from_anchor_chan_backup_non_deterministic_lightning
+tests/test_lnwallet.py::TestChannelBackup::test_local_fclose_from_srk_chan_backup_deterministic_lightning
+tests/test_lnwallet.py::TestChannelBackup::test_local_fclose_from_srk_chan_backup_non_deterministic_lightning
+tests/test_lnwallet.py::TestChannelBackup::test_request_fclose_from_anchor_chan_backup_deterministic_lightning
+tests/test_lnwallet.py::TestChannelBackup::test_request_fclose_from_anchor_chan_backup_non_deterministic_lightning
+tests/test_lnwallet.py::TestChannelBackup::test_request_fclose_from_anchor_onchain_chan_backup
+tests/test_lnwallet.py::TestChannelBackup::test_request_fclose_from_srk_chan_backup_deterministic_lightning
+tests/test_lnwallet.py::TestChannelBackup::test_request_fclose_from_srk_chan_backup_non_deterministic_lightning
+tests/test_lnwallet.py::TestChannelBackup::test_request_fclose_from_srk_onchain_chan_backup
+tests/test_lnwallet.py::TestChannelBackup::test_request_fclose_from_v2_anchor_chan_backup_deterministic_wallet
+tests/test_lnwallet.py::TestChannelBackup::test_save_backup_includes_channel_backups
+
 # Submarine swaps require Lightning, which is disabled  [commit: disable Lightning]
-tests/test_submarine_swaps.py::TestSwapClaim::test_forward_swap_does_not_refund_after_learning_the_preimage
-tests/test_submarine_swaps.py::TestSwapClaim::test_forward_swap_extracts_preimage_from_funding_utxo
 tests/test_submarine_swaps.py::TestSwapClaim::test_forward_swap_fails_swap_when_refund_tx_confirms
 tests/test_submarine_swaps.py::TestSwapClaim::test_forward_swap_keeps_htlcs_until_refund_tx_is_deeply_confirmed
 tests/test_submarine_swaps.py::TestSwapClaim::test_forward_swap_refunds_funding_utxo_after_expiry
-tests/test_submarine_swaps.py::TestSwapClaim::test_forward_swap_stops_watching_after_claim_tx_is_deeply_confirmed
 tests/test_submarine_swaps.py::TestSwapClaim::test_reverse_swap_claims_to_external_output
-tests/test_submarine_swaps.py::TestSwapClaim::test_reverse_swap_does_not_claim_against_an_unconfirmed_refund_tx
 tests/test_txbatcher.py::TestTxBatcher::test_sweep_from_submarine_swap
 
-# asserts exact tx hex/txid; nLockTime is now 499999999  [commit: replay-protection nLockTime]
-#
-# NOTE test_rbf is deselected whole, which is coarser than we would like: only its
-# _rbf_sufficient_fee_increase_adding_outputs_to_base_tx subtest is affected, and
-# pytest --deselect cannot target an individual subtest. The rest of test_rbf still
-# passes; re-check it by hand if RBF behaviour is ever touched.
-tests/test_wallet_vertical.py::TestWalletSending::test_rbf
+# asserts exact tx hex/txid; nLockTime is now 499999998  [commit: replay-protection nLockTime]
+# (test_rbf and four TestSwapClaim tests were on this list for 4.8.1; upstream
+# changed them in 4.8.3 and they pass again, so they were removed by --audit.)
 tests/plugins/test_timelock_recovery.py::TestTimelockRecovery::test_make_unsigned_alert_tx
 tests/plugins/test_timelock_recovery.py::TestTimelockRecovery::test_make_unsigned_cancellation_tx
 tests/plugins/test_timelock_recovery.py::TestTimelockRecovery::test_make_unsigned_recovery_tx
 tests/test_commands.py::TestCommandsTestnet::test_bumpfee
+tests/test_commands.py::TestCommandsTestnet::test_dscancel
 tests/test_wallet_vertical.py::TestWalletHistory_HelperFns::test_get_tx_status_feerate_for_local_2of3_multisig_partial_tx
 tests/test_wallet_vertical.py::TestWalletSending::test_sending_between_p2sh_1of2_and_p2wpkh_p2sh
 tests/test_wallet_vertical.py::TestWalletSending::test_sending_between_p2sh_2of3_and_uncompressed_p2pkh
@@ -56,7 +67,5 @@ tests/test_interface.py::TestInterface::test_transaction_broadcast
 #   [commit: rename the smallest unit to szat]
 tests/test_wallet_vertical.py::TestWalletHistory_HelperFns::test_get_tx_status_feerate_for_local_2of3_multisig_signed_tx
 
-# Pre-existing upstream failure: also fails on a pristine 4.8.1 checkout, so it
-# is NOT ours. Timing-sensitive. Re-check on each rebase; if upstream fixes it,
-# drop this line.
-tests/test_interface.py::TestInterface::test_we_disconnect_on_incoming_notification_spam
+# (test_we_disconnect_on_incoming_notification_spam, a pre-existing upstream
+# failure on 4.8.1, passes on 4.8.3 and was dropped from this list.)
